@@ -1,18 +1,16 @@
 <template>
-<div>
-    GO LIST ({{Object.keys(go).length}})
-    <div class="list overflow-scroll">
-        <ul>
-            <li 
-            class="hover:bg-light cursor-pointer" 
-            v-for="go_obj in go" 
-            :key="go_obj.go.id"
-            @click="clickSelection(go_obj.go.id)"
-            :class="{ 'bg-light': goSelection.includes(go_obj.go.id) }">
-                {{go_obj.go.id}} {{go_obj.go.term}} ({{go_obj.proteins.length}})
-            </li>
-        </ul>
-    </div>
+<div class="list p-2 overflow-scroll w-full">
+    <p class="font-bold mb-1"> Filtered GO list ({{Object.keys(go).length}})</p>
+    <ul>
+        <li 
+        class="hover:bg-light cursor-pointer" 
+        v-for="go_obj in go" 
+        :key="go_obj.go.id"
+        @click="clickSelection(go_obj.go.id)"
+        :class="{ 'bg-light': goSelection.includes(go_obj.go.id) }">
+            {{go_obj.go.id}} {{go_obj.go.term}} ({{go_obj.proteins.length}})
+        </li>
+    </ul>
 </div>
 </template>
 
@@ -66,7 +64,9 @@ export default defineComponent({
 <style scoped>
 .list{
     height:500px;
-    overflow-y:auto; 
+    border: solid grey; 
+    border-width:1px; 
+    border-radius:5px; 
+    overflow-x:hidden; 
 }
-
 </style>

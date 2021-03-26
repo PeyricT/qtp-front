@@ -1,46 +1,44 @@
 <template>
-    <div v-if="!error" class="flex gap-10">
-        <!-- plot part -->
-        <div>
-            <!-- transformy buttons -->
-            <div class="tab mt-2" v-if="volcanoDrawed">
-                <button class="tablinks" :class="{ active: transformy === 'none' }" @click="transformy = 'none'"> Raw </button>
-                <button class="tablinks" :class="{ active: transformy === '-log10' }" @click="transformy = '-log10'"> - Log10 transformation </button>
-                <button class="tablinks" :class="{ active: transformy === 'log10' }" @click="transformy = 'log10'"> Log10 transformation </button>
-            </div>
-            
-            <!-- d3 volcano -->
+    <div class="root">
+        <div v-if="!error" class="flex gap-10">
+            <!-- plot part -->
             <div>
-                <svg ref="svgRoot"/>
+                <!-- transformy buttons -->
+                <div class="tab mt-2" v-if="volcanoDrawed">
+                    <button class="tablinks" :class="{ active: transformy === 'none' }" @click="transformy = 'none'"> Raw </button>
+                    <button class="tablinks" :class="{ active: transformy === '-log10' }" @click="transformy = '-log10'"> - Log10 transformation </button>
+                    <button class="tablinks" :class="{ active: transformy === 'log10' }" @click="transformy = 'log10'"> Log10 transformation </button>
+                </div>
+                
+                <!-- d3 volcano -->
+                <div>
+                    <svg ref="svgRoot"/>
+                </div>
+
+                <!-- legend -->
+                <div class="flex w-full gap-3 p-3" v-if="volcanoDrawed">
+                    <div class="bg-pannelSelection border border-black w-1/6"/>
+                    <div class="flex-grow w-5/6">
+                        <span> Selected area </span>
+                    </div>
+                </div>
             </div>
 
-            <!-- legend -->
-            <div class="flex w-full gap-3 p-3" v-if="volcanoDrawed">
-                <div class="bg-pannelSelection border border-black w-1/6"/>
-                <div class="flex-grow w-5/6">
-                    <span> Selected area </span>
-                 </div>
-            </div>
-        </div>
-
-        <!--filtered prot and go part -->
-        <div v-if="volcanoDrawed" class="flex w-full mt-2 flex-col">
-            <div class="flex">
-            <!-- prot list -->
-                <ProteinsList :points="filteredByPannelPoints" class="flex-grow-0 w-full"/>
-                <!-- go list -->
-                <GoList class="flex-grow-0 w-full" :go="goSelected"/>
+            <!--filtered prot and go part -->
+            <div v-if="volcanoDrawed" class="flex w-full mt-2 flex-col">
+                <div class="flex gap-4">
+                <!-- prot list -->
+                    <ProteinsList :points="filteredByPannelPoints" class="flex-grow-0 w-full"/>
+                    <!-- go list -->
+                    <GoList class="flex-grow-0 w-full" :go="goSelected"/>
+                </div>                
             </div>
 
-            <ComputeORA class="mt-2"/>
             
+
         </div>
-
-        
-
+        <Error v-if="error" message="Error with volcano plot>"/>
     </div>
-    <Error v-if="error" message="Error with volcano plot>"/>
-    
 </template>
 
 <script lang="ts">
@@ -61,10 +59,9 @@ import Error from '@/components/global/Error.vue';
 import Loader from '@/components/global/Loader.vue'; 
 import ProteinsList from '@/components/ProteinsList.vue'
 import GoList from '@/components/GoList.vue'
-import ComputeORA from '@/components/ComputeORA.vue'
 
 export default defineComponent({
-    components : { Error, ProteinsList, GoList, Loader, ComputeORA }, 
+    components : { Error, ProteinsList, GoList, Loader }, 
 
     props: {
         data: {
@@ -86,9 +83,13 @@ export default defineComponent({
             type: Number as PropType<number>,
             default:500
         },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     },
 
-    setup(props){
+    setup(props, {emit}){
 
         const protToGoWorker = new Worker('@/workers/protToGoWorker.ts', {type: 'module'})
         //ATTRIBUTES
@@ -146,6 +147,7 @@ export default defineComponent({
             selectAllPannels(sliderUI, layerUI, axis.xScale, axis.yScale);
 
             volcanoDrawed.value = true
+            emit('volcano-drawed')
 
             layerUI.onSelectedLayerClick((x,y) => {
                 console.log("click")
@@ -278,6 +280,19 @@ export default defineComponent({
 .tab button.active {
   background-color: #ccc;
 }
+
+.root{
+    position:relative; 
+}
+
+.disabled{
+    position:absolute; 
+    width:100%;
+    height:100%;
+    background-color:black;
+    opacity:0.7;  
+}
+
 
 
 </style>

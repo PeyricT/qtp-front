@@ -1,5 +1,5 @@
 <template>
-<div class="list p-2 mr-5 overflow-scroll w-full">
+<div class="list p-2 overflow-scroll w-full">
 <p class="font-bold mb-1">
 Filtered proteins list ({{points.length}}) :
 </p>
@@ -58,19 +58,12 @@ export default defineComponent({
 })
 </script>
 
-<style>
+<style scoped>
     .list{
         height:500px; 
         border:solid grey; 
         border-width:1px; 
         border-radius:5px; 
-    }
-    ::-webkit-scrollbar {
-        -webkit-appearance: none;
-        width: 7px;
-        }
-    ::-webkit-scrollbar-thumb {
-        border-radius: 4px;
-        background-color: rgba(0, 0, 0, .5);        
+        overflow-x:hidden; 
     }
 </style>

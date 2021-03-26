@@ -4,12 +4,13 @@
 <template>
    <h1 class="title"> XML Loader II</h1>
    <div class="flex">
-    <DragAndDrop 
+    <DragAndDrop class="w-full"
     @xml-load="doIt"
     @xls-drop="xlsDropped=true"
     />
-    <InputFile/>
+    <!--<InputFile/>-->
    </div>
+   <button class="bg-gray-300 p-2 hover:bg-gray-400 ml-3" @click="loadExample"> Load an example </button>
    <Loader v-if="xlsDropped" message="Data are loading..."/>
     <div 
     v-if="loaded && !xlsDropped"
@@ -204,6 +205,24 @@ export default defineComponent({
             defaultColSelectionStr.value = '(manual selection)'; 
         }
 
+        const loadExample = async () => {
+            xlsDropped.value = true;
+            const arrayData =  await fetch('xls/TMT-donées brutes_Results_20-0609-0618_VegetativeExp_V2_proteins.xlsx')
+                .then( (response) => {
+                    return response.arrayBuffer(); 
+                })
+                .catch(() => console.error("No XLS found"))
+
+            if (arrayData){
+                const data = new Uint8Array(arrayData);
+                const wb = XLSX.read(data, {type:"array"});
+                store.dispatch('initStoreBook', wb);
+                store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
+                loaded.value = true;
+                xlsDropped.value = false; 
+            }
+        }
+
         onMounted(()=>{
             ////console.log("mounted xmlLoader"); 
             window.addEventListener('mousemove', resizeOnMouseMove)
@@ -252,7 +271,7 @@ export default defineComponent({
             window.removeEventListener("mousemove", resizeOnMouseMove)
             window.removeEventListener('mouseup', resizeOnMouseUp)
         })
-        return { doIt, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped};
+        return { doIt, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped, loadExample};
     }
 });
 </script>
