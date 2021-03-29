@@ -64,7 +64,7 @@ export namespace UniprotDatabase {
         return uniprotData;        
     }
     
-    export const add = async (uniprotIDs: string[]) => {
+    export const add = async (uniprotIDs: string[]): Promise<number> => {
         //console.log("ADD CALL");
         const uniprotData: UniprotFetch = await fetchFrom(uniprotIDs);
         ////console.log(`Fetched this`);
@@ -177,5 +177,32 @@ export namespace UniprotDatabase {
             }
           );
     } 
+
+    export const clear = async() => {
+        const dbRequest = indexedDB.open(dbName, V_NUM);
+        return new Promise((res, rej) => {
+            DBOpenRequest = indexedDB.open(dbName, V_NUM);
+            DBOpenRequest.onerror = (event) => {
+                rej(Error("IndexedDB database error"));
+            };
+
+            DBOpenRequest.onupgradeneeded = (event) => {
+                const db = (event.target as IDBOpenDBRequest).result;
+                const objectStore = db.createObjectStore("uniprotEntity", {keyPath: "id"});
+                console.warn("Can't delete, upgrade needed")
+                rej(Error("Can't delete due to version sync"))
+            };
+            
+            DBOpenRequest.onsuccess = (event) => {
+                console.log("on success"); 
+                const database      = (event.target as IDBOpenDBRequest).result;
+                const transaction   = database.transaction(["uniprotEntity"], 'readwrite');
+                const objectStore   = transaction.objectStore("uniprotEntity");
+                objectStore.clear(); 
+                res("deleted"); 
+            }
+
+        })
+    }
      
 }
