@@ -21,6 +21,8 @@
 <script lang="ts">
 
 import { defineComponent, ref } from 'vue'; 
+import { useStore } from 'vuex';
+
 import Loader from '@/components/global/Loader.vue'; 
 
 export default defineComponent({
@@ -32,12 +34,18 @@ export default defineComponent({
         const test = ref(false); 
         const resultsLoaded = ref(false); 
         const computationLaunched = ref(false); 
+        const store = useStore(); 
 
         const launchComputation = () => {
-            console.log("LAUNCH")
             computationLaunched.value = true; 
             emit('disable-volcano')
-            setTimeout(() => {resultsLoaded.value = true}, 3000); 
+            
+            const method = "fisher"; 
+            const allAccessions = store.getters.getColDataByName("Accession", 'string')
+
+            resultsLoaded.value = true; 
+
+            
         }
 
         const closeResults = () => {
