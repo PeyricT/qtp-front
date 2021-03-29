@@ -125,6 +125,7 @@ export default defineComponent({
         const numberPerPage = 10; 
         const currentPage = ref(1); 
         const xlsDropped = ref(false);
+        const uniprotDBFilled = ref(false);
 
         const dimensions: any = computed( () => {
             return  store.getters.dimensions;
@@ -220,7 +221,32 @@ export default defineComponent({
                 store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
                 loaded.value = true;
                 xlsDropped.value = false; 
+                console.log("delete uniprot database")
+                await UniprotDatabase.clear(); 
+                console.log("fill up uniprot database")
+                await storeInUniprotDatabase(); 
+                /*storeInUniprotDatabase()
+                    .then((nb: number) => console.log(`${nb} proteins added to UniprotDatabase`))
+                    .catch(err => {console.log("FINAL ERROR"); console.log(err)})*/
+                console.log("uniprot database filled"); 
+                uniprotDBFilled.value = true; 
+                const test = await UniprotDatabase.get("P23256")
+                console.log(test); 
+
             }
+        }
+
+        const storeInUniprotDatabase = (): Promise<number> => {
+            console.log("storeInUniprotDatabase")
+            return new Promise((res, rej) => {
+                const uniprotIdList: string[]|undefined = store.getters.getColDataByName("Accession", "string");
+                if (uniprotIdList){
+                    UniprotDatabase.add(uniprotIdList)
+                        .then((nbAdd:number) => res(nbAdd))
+                        .catch(err => rej(err))
+                }
+                else rej(Error("Can't fill up uniprot database. No uniprot ids"))
+            })
         }
 
         onMounted(()=>{
