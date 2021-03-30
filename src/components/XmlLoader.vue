@@ -12,6 +12,7 @@
    </div>
    <button class="bg-gray-300 p-2 hover:bg-gray-400 ml-3" @click="loadExample"> Load an example </button>
    <Loader v-if="xlsDropped" message="Data are loading..."/>
+   <Loader v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
     <div 
     v-if="loaded && !xlsDropped"
     >
@@ -297,7 +298,7 @@ export default defineComponent({
             window.removeEventListener("mousemove", resizeOnMouseMove)
             window.removeEventListener('mouseup', resizeOnMouseUp)
         })
-        return { doIt, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped, loadExample};
+        return { doIt, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped, loadExample, uniprotDBFilled};
     }
 });
 </script>
