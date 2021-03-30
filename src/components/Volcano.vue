@@ -182,6 +182,8 @@ export default defineComponent({
                 })
             })
             filteredByPannelPoints.value = allPoints.value
+            emit("prot-selection-change", filteredByPannelPoints.value)
+
             //console.log(allPoints.value)
             //console.log(JSON.parse(JSON.stringify(allPoints.value)))
             
@@ -189,10 +191,13 @@ export default defineComponent({
 
         const removeFilterPoints = (predicateFn: (point: Points) => boolean) => {
             filteredByPannelPoints.value = filteredByPannelPoints.value.filter(point => !predicateFn(point))
+            emit("prot-selection-change", filteredByPannelPoints.value)
         }
 
         const addFilterPoints = (predicateFn: (point:Points) => boolean) => {
             filteredByPannelPoints.value = filteredByPannelPoints.value.concat(allPoints.value.filter(point => predicateFn(point)))
+            emit("prot-selection-change", filteredByPannelPoints.value)
+
         }
     
 

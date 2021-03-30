@@ -2,6 +2,7 @@
 <div>
   <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
   <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
+  <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
   <div class="relative">
       <div v-if="volcanoDisabled" class="disabled"/>
       <div v-if="uniprotLoaded">
@@ -21,13 +22,19 @@
           ></div>
         </div>
         <div>
-          <Volcano :data="plotData" @volcano-drawed="volcanoDrawed=true"/>
+          <Volcano 
+            :data="plotData" 
+            @volcano-drawed="volcanoDrawed=true"
+            @prot-selection-change="saveSelectedProtId"/>
         </div>
     </div>
   </div>
-  <ComputeORA v-if="volcanoDrawed"
+  <ComputeORA v-if="volcanoDrawed && taxid"
           @disable-volcano="volcanoDisabled=true"
-          @enable-volcano="volcanoDisabled=false"/>
+          @enable-volcano="volcanoDisabled=false"
+          :taxid="taxid"
+          :selectedProts="selectedProts"
+          />
 </div>
 </template>
 
@@ -40,7 +47,8 @@ import ProteinsList from '@/components/ProteinsList.vue';
 import GoList from '@/components/GoList.vue'; 
 import Error from '@/components/global/Error.vue'; 
 import Loader from '@/components/global/Loader.vue'; 
- import ComputeORA from '@/components/ComputeORA.vue'
+import Warning from '@/components/global/Warning.vue'; 
+import ComputeORA from '@/components/ComputeORA.vue'
 import { toggle } from '../utilities/Arrays';
 //import protToGoWorker from '@/workers/prot_to_go_worker'; 
 import { UniprotDatabase } from '../utilities/uniprot-database';
@@ -48,7 +56,7 @@ import * as t from '../types/volcano';
 export default defineComponent({
 
 
-  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA },
+  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA, Warning },
 
   setup() {
 
@@ -78,6 +86,9 @@ export default defineComponent({
     const canDraw = computed(() => selected.value.length === 2);
 
     let uniprotData: t.PointData[] = [];
+    const taxidWarning: Ref<Set<number>> = ref(new Set()); 
+    const taxid: Ref<number> = ref(0); 
+    const selectedProts : Ref<string[]> = ref([]); 
     
     const draw = () => {
       if(canDraw.value) {
@@ -109,8 +120,24 @@ export default defineComponent({
         })
       }
 
-      const accessions = store.getters.getColDataByName("Accession", "string"); 
+      const accessions = store.getters.getColDataByName("Accession", "string");
       return await Promise.all(accessions.map((acc: string) => getDataPromise(acc)))
+    }
+
+    const checkTaxidProtData = async (): Promise<Set<number>> => {
+      return new Promise((resolve, reject) => {
+        const setTaxid: Set<number> = new Set();
+        uniprotData.forEach(prot => {
+          setTaxid.add(Number(prot.taxid))
+        }) 
+
+        if (setTaxid.size === 1) resolve(setTaxid)
+        else reject(setTaxid)
+      })
+    }
+
+    const saveSelectedProtId = (protData: t.Points[]) => {
+      selectedProts.value = protData.map(prot => prot.d.id); 
     }
 
    onMounted(() => {
@@ -121,8 +148,19 @@ export default defineComponent({
         getProtData()
           .then((values) => {
             console.log("prot data loaded")
-            uniprotLoaded.value = true
+            
             uniprotData = values
+            checkTaxidProtData()
+              .then((taxids_resp: Set<number>) => {
+                taxid.value = Array.from(taxids_resp)[0]
+                uniprotLoaded.value = true
+                console.log(taxid.value); 
+              })
+              .catch((taxids_resp: Set<number>) => {
+                taxidWarning.value = taxids_resp; 
+              })
+
+            
 
           })
           .catch(reason => {
@@ -132,11 +170,7 @@ export default defineComponent({
         
     });
 
-    onUpdated(() => {
-      console.log("UPDATE DATA EXPLORE"); 
-    })
-
-    return {canDraw, draw, availableData, selectable, selected, select, isSelected, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed};
+    return {canDraw, draw, availableData, selectable, selected, select, isSelected, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts} ;
   }
 
 

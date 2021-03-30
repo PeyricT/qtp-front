@@ -24,11 +24,8 @@ interface PointData{
     id: string;
     name: string; 
     GO: GOData[]; 
+    taxid: number; 
 
-}
-
-interface DatumPoints extends Points {
-    datum: Record<string, string|number>
 }
 
 type transform = "log10" | "-log10" | "none";

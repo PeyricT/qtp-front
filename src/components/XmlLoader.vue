@@ -5,7 +5,7 @@
    <h1 class="title"> XML Loader II</h1>
    <div class="flex">
     <DragAndDrop class="w-full"
-    @xml-load="doIt"
+    @xml-load="loadDroppedFile"
     @xls-drop="xlsDropped=true"
     />
     <!--<InputFile/>-->
@@ -154,22 +154,19 @@ export default defineComponent({
 
         const savedWidths = ref(Array(dimensions.value[1]).fill(''));
 
-        const doIt = (dropData: any) => {
-            console.log("doIT")
-            //////console.log("Tryin to read ...");
+        const loadDroppedFile = async (dropData: any) => {
             const workbook = XLSX.read(dropData, {type: 'array'});
-            console.log(typeof(workbook)); 
-            console.log(workbook.SheetNames)
-            ////console.dir(workbook)
             store.dispatch('initStoreBook', workbook);
-            console.log("OOO")
             store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
-            console.log("AAAA")
-            //////console.log(workbook.SheetNames);
-            /*const _ = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[_];*/            
+         
             loaded.value = true;    
-            xlsDropped.value = false;          
+            xlsDropped.value = false;     
+            
+            await storeInUniprotDatabase(); 
+            uniprotDBFilled.value = true; 
+
+
+
         };
 
         const cell = (x: number, y: number)=>{
@@ -226,13 +223,8 @@ export default defineComponent({
                 await UniprotDatabase.clear(); 
                 console.log("fill up uniprot database")
                 await storeInUniprotDatabase(); 
-                /*storeInUniprotDatabase()
-                    .then((nb: number) => console.log(`${nb} proteins added to UniprotDatabase`))
-                    .catch(err => {console.log("FINAL ERROR"); console.log(err)})*/
                 console.log("uniprot database filled"); 
                 uniprotDBFilled.value = true; 
-                const test = await UniprotDatabase.get("P23256")
-                console.log(test); 
 
             }
         }
@@ -298,7 +290,7 @@ export default defineComponent({
             window.removeEventListener("mousemove", resizeOnMouseMove)
             window.removeEventListener('mouseup', resizeOnMouseUp)
         })
-        return { doIt, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped, loadExample, uniprotDBFilled};
+        return { loadDroppedFile, name, wsHead, increment, loaded, headers, dimensions, cell, resizeOnMouseDown, curCol, pageX, savedWidths, addToSelection, selectedCol, defaultColSelectionStr, paginationRange, numberOfPages, currentPage, xlsDropped, loadExample, uniprotDBFilled};
     }
 });
 </script>
