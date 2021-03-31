@@ -26,7 +26,7 @@ export namespace UniprotDatabase {
     const dbName = "uniprotDB";
     let maxItem: number;
     let DBOpenRequest: IDBOpenDBRequest;
-    const V_NUM = 3; 
+    const V_NUM = 6; 
     let DB: IDBDatabase;
     const handshake = async (url?: string) => {
         try {
@@ -65,7 +65,7 @@ export namespace UniprotDatabase {
     }
     
     export const add = async (uniprotIDs: string[]): Promise<number> => {
-        //console.log("ADD CALL");
+        console.log("ADD CALL");
         const uniprotData: UniprotFetch = await fetchFrom(uniprotIDs);
         ////console.log(`Fetched this`);
         ////console.dir(uniprotData);
@@ -75,6 +75,7 @@ export namespace UniprotDatabase {
                 rej(Error("IndexedDB database error"));
             };
             DBOpenRequest.onupgradeneeded = (event) => {
+                console.log("OOOOOOOO UPGRADE OOOOOO ")
                 const db = (event.target as IDBOpenDBRequest).result;
                 const objectStore = db.createObjectStore("uniprotEntity", {keyPath: "id"});
             };
@@ -179,7 +180,7 @@ export namespace UniprotDatabase {
     } 
 
     export const clear = async() => {
-        const dbRequest = indexedDB.open(dbName, V_NUM);
+        //const dbRequest = indexedDB.open(dbName, V_NUM);
         return new Promise((res, rej) => {
             DBOpenRequest = indexedDB.open(dbName, V_NUM);
             DBOpenRequest.onerror = (event) => {
@@ -188,7 +189,7 @@ export namespace UniprotDatabase {
 
             DBOpenRequest.onupgradeneeded = (event) => {
                 const db = (event.target as IDBOpenDBRequest).result;
-                const objectStore = db.createObjectStore("uniprotEntity", {keyPath: "id"});
+                //const objectStore = db.createObjectStore("uniprotEntity", {keyPath: "id"});
                 console.warn("Can't delete, upgrade needed")
                 rej(Error("Can't delete due to version sync"))
             };
@@ -203,6 +204,52 @@ export namespace UniprotDatabase {
             }
 
         })
+    }
+
+    export const loadVersion = async (): Promise<number> => {
+        console.log("loadVersion")
+        const response = await fetch(`/api/uniprot/version`, {
+            method: 'GET',
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }});
+
+        const json =  await response.json();
+        const version = json.version
+
+        console.log("VERSION", version)
+
+        return new Promise((res, rej) => {
+            DBOpenRequest = indexedDB.open(dbName, V_NUM);
+            DBOpenRequest.onerror = (event) => {
+                rej(Error("IndexedDB database error"));
+            };
+
+            DBOpenRequest.onupgradeneeded = (event) => {
+                console.log("UPGRADE NEEDED"); 
+                const db = (event.target as IDBOpenDBRequest).result;
+                const objectStore = db.createObjectStore("uniprotEntity", {keyPath: "id"});
+            }
+
+            DBOpenRequest.onsuccess = (event) => {
+                console.log("SUCCESS"); 
+                const database      = (event.target as IDBOpenDBRequest).result;
+                const transaction   = database.transaction(["version"], 'readwrite');
+                const objectStore   = transaction.objectStore("version");
+                
+                const objectRequest = objectStore.put(version); // Overwrite if exists
+                objectRequest.onerror = (event) => {
+                    rej(Error("Can't add version to uniprot database"));
+                };
+                objectRequest.onsuccess = (event) => {
+                    res(version)
+                };
+                
+
+
+            };
+        });
     }
      
 }
