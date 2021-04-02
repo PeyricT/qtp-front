@@ -14,7 +14,7 @@
    <Loader v-if="xlsDropped" message="Data are loading..."/>
    <Loader v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
     <div 
-    v-if="loaded && !xlsDropped"
+    v-if="loaded && uniprotDBFilled && !xlsDropped"
     >
         <div 
             class="flex flex-col"
@@ -206,6 +206,8 @@ export default defineComponent({
 
         const loadExample = async () => {
             xlsDropped.value = true;
+            uniprotDBFilled.value = false; 
+            loaded.value = false; 
             const arrayData =  await fetch('xls/TMT-donées brutes_Results_20-0609-0618_VegetativeExp_V2_proteins.xlsx')
                 .then( (response) => {
                     return response.arrayBuffer(); 
