@@ -111,7 +111,8 @@ import InputFile from '@/components/InputFile.vue'
 import XLSX  from 'xlsx';
 import { useStore } from 'vuex'
 
-import { UniprotDatabase } from '../utilities/uniprot-database';
+import { UniprotStorage } from '../utilities/uniprot-storage';
+const UniprotDatabase = new UniprotStorage()
 import { range } from '../utilities/basic_functions'
 
 export default defineComponent({
@@ -164,7 +165,6 @@ export default defineComponent({
             
             await storeInUniprotDatabase(); 
             uniprotDBFilled.value = true; 
-
 
 
         };
@@ -221,8 +221,8 @@ export default defineComponent({
                 store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
                 loaded.value = true;
                 xlsDropped.value = false; 
-                console.log("delete uniprot database")
-                await UniprotDatabase.clear(); 
+                //console.log("delete uniprot database")
+                //await UniprotDatabase.clear(); 
                 console.log("fill up uniprot database")
                 await storeInUniprotDatabase(); 
                 console.log("uniprot database filled"); 

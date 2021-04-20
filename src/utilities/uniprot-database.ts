@@ -26,7 +26,7 @@ export namespace UniprotDatabase {
     const dbName = "uniprotDB";
     let maxItem: number;
     let DBOpenRequest: IDBOpenDBRequest;
-    const V_NUM = 3; 
+    const V_NUM = 6; 
     let DB: IDBDatabase;
     const handshake = async (url?: string) => {
         try {
@@ -47,7 +47,6 @@ export namespace UniprotDatabase {
 
     const fetchFrom = async (uniprotIDs: string[]): Promise<UniprotFetch> => {
         //console.log(`ff Loading ${uniprotIDs.length} items ff`);
-        //console.log(providerURL); 
         const response = await fetch(`${providerURL ? providerURL : ''}/api/uniprot/many`, {
             method: 'POST',
             headers: {
