@@ -16,7 +16,7 @@ export class UniprotStorage {
     providerURL: string|undefined
 
     constructor(url?: string){
-        this.data = {"pouet" : {GO : [], fullName: "Pouet", geneName : "pouet", id: "A5A613", name: "pouet", taxid: "pouet"}}
+        this.data = {}
         this.providerURL = url
     }
 
