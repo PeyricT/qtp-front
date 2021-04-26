@@ -58,8 +58,8 @@ import InputText from 'primevue/inputtext';
 import XLSX  from 'xlsx';
 import { useStore } from 'vuex'
 
-import { UniprotStorage } from '../utilities/uniprot-storage';
-const UniprotDatabase = new UniprotStorage()
+import { logDB } from '../utilities/uniprot-storage';
+const UniprotDatabase = logDB(); 
 import { range } from '../utilities/basic_functions'
 
 interface ColTemplate{
