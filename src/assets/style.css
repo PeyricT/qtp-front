@@ -1,6 +1,9 @@
-/* ./src/index.css */
-
-/*! @import */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root{
+    --primary-50:#6e3dc2;
+    --primary-10:#e2d8f3; 
+    --primary-20: #c5b1e7; 
+}

@@ -2,6 +2,7 @@ import { map } from 'd3';
 import { createStore } from 'vuex'
 import * as XLSX from 'xlsx';
 import {proteinSelection} from './modules/proteinSelection'
+import {states} from './modules/states' 
 
 export interface WorkBookStore {
   count: number;
@@ -88,6 +89,8 @@ export default createStore({
     getSelectedHeaders(state, getters):  string[]{
       const _: string[] = []
       const nCol = getters.dimensions[1]; 
+      console.log("getSelectedHeaders"); 
+      console.log(state.selectedCol); 
       for (let c=0; c < nCol ; c++) {
         if (state.selectedCol.includes(c)) _.push(getters.cell(0,c))
       }
@@ -134,6 +137,9 @@ export default createStore({
       if (index === -1) state.selectedCol.push(addToSelectionOptions.colNum)
       else if(addToSelectionOptions.remove) state.selectedCol.splice(index, 1)
     },
+    mutateSelectedCols(state, colIds: number[]) {
+      state.selectedCol = colIds
+    }
     
   },
   actions: {
@@ -156,7 +162,7 @@ export default createStore({
     }
   },
   modules: {
-    proteinSelection
+    proteinSelection, states
   }
 })
 
