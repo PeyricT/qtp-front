@@ -74,8 +74,6 @@ export default defineComponent({
             
             const method = "fisher"; 
             const expAccessions = store.getters.getColDataByName("Accession", 'string')
-            console.log("expAccesions", expAccessions)
-            console.log("selectedProts", props.selectedProts)
             const apiInput: PwasAPIInput = {
                 proteinsExp : expAccessions,
                 proteinsDelta : props.selectedProts, 
