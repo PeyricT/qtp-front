@@ -1,13 +1,13 @@
 <template>
-<div class="list p-2 overflow-scroll w-full">
+<div class="select-list p-2 overflow-scroll w-full">
     <p class="font-bold mb-1"> Filtered GO list ({{Object.keys(go).length}})</p>
     <ul>
         <li 
-        class="hover:bg-light cursor-pointer" 
+        class="list-item cursor-pointer" 
         v-for="go_obj in go" 
         :key="go_obj.go.id"
         @click="clickSelection(go_obj.go.id)"
-        :class="{ 'bg-light': goSelection.includes(go_obj.go.id) }">
+        :class="{ 'selected': goSelection.includes(go_obj.go.id) }">
             {{go_obj.go.id}} {{go_obj.go.term}} ({{go_obj.proteins.length}})
         </li>
     </ul>
@@ -62,11 +62,4 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.list{
-    height:500px;
-    border: solid grey; 
-    border-width:1px; 
-    border-radius:5px; 
-    overflow-x:hidden; 
-}
 </style>

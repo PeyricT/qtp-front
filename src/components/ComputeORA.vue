@@ -10,23 +10,16 @@
     <div v-if="computationLaunched" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>
         <div v-if="resultsLoaded">
-            <div v-if="Object.keys(ORAResultsList).length === 0"> No GO terms with significative p-value (0.5) </div>
+            <div v-if="Object.keys(ORAResultsList).length === 0"> No GO terms with significative p-value {{pvalue}} </div>
             <div v-else> 
-                <p class="font-bold">Significative GO terms (p-value > 0.5) : </p>
-                
-                <table>
-                    <tr>
-                        <th>GO Term</th>
-                        <th>Name</th>
-                        <th>P-value</th>
-                    </tr>  
-                    <tr v-for="v,k in ORAResultsList" :key="k">
-                        <td> {{k}} </td>
-                        <td> {{v.name}} </td>
-                        <td> {{v.pvalue}} </td>
-                    </tr>
-                     
-                </table>
+                <DataTable :value="ORAResultsList" class="p-datatable-sm" sortField="pvalue" :sortOrder="1" :scrollable="true">
+                    <template #header>
+                        <p class="text-lg">{{ORAResultsList.length}} GO terms with p-value &lt; {{pvalue}} </p>
+                    </template>
+                    <Column field="go" header="GO Term" :sortable="true"/>
+                    <Column field="name" header="Name" :sortable="true"/>
+                    <Column field="pvalue" header="P-value" :sortable="true"/>
+                </DataTable>
             </div>
         </div>
     </div>
@@ -43,11 +36,13 @@ import { PwasAPIInput } from '../types/ora'
 
 import Loader from '@/components/global/Loader.vue'; 
 import Button from 'primevue/button';
+import DataTable from 'primevue/datatable'; 
+import Column from 'primevue/column';
 
 
 export default defineComponent({
 
-    components : { Loader, Button }, 
+    components : { Loader, Button, DataTable, Column }, 
 
     props: {
         taxid: {
@@ -62,11 +57,11 @@ export default defineComponent({
 
     setup(props, { emit }){
 
-        const test = ref(false); 
         const resultsLoaded = ref(false); 
         const computationLaunched = ref(false); 
         const ORAResultsList = ref({}); 
         const store = useStore(); 
+        const pvalue = 0.1
 
         const launchComputation = async () => {
             computationLaunched.value = true; 
@@ -78,7 +73,8 @@ export default defineComponent({
                 proteinsExp : expAccessions,
                 proteinsDelta : props.selectedProts, 
                 method: method, 
-                taxid: props.taxid
+                taxid: props.taxid, 
+                pvalue: pvalue
             }
 
             fetch(`/api/pwas/ora`, {
@@ -105,7 +101,7 @@ export default defineComponent({
         }
 
     
-    return { launchComputation, resultsLoaded, computationLaunched, closeResults, ORAResultsList}
+    return { launchComputation, resultsLoaded, computationLaunched, closeResults, ORAResultsList, pvalue}
 
     }
 

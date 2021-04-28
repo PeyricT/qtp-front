@@ -7,3 +7,20 @@
     --primary-10:#e2d8f3; 
     --primary-20: #c5b1e7; 
 }
+
+.list-item:hover{
+    background-color:var(--surface-200); 
+}
+
+.list-item.selected{
+    color: #673AB7;
+    background: rgba(103, 58, 183, 0.12); 
+}
+
+.select-list{
+    height:500px; 
+    border:solid var(--surface-400); 
+    border-width:1px; 
+    border-radius:5px; 
+    overflow-x:hidden; 
+}

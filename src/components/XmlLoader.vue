@@ -30,11 +30,17 @@
             </p>
             </div>
 
-    <DataTable :value="jsonData" :paginator="true" :rows="10" :resizableColumns="true" columnResizeMode="expand" showGridlines responsiveLayout="scroll" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10,20,50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+    <DataTable :value="jsonData" :paginator="true" :rows="10" :resizableColumns="true" columnResizeMode="expand" showGridlines responsiveLayout="scroll" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10,20,50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+    v-model:filters="filters"
+    >
         <template #header>
-            <div style="text-align:left">
+            <div class="p-d-flex p-jc-between p-ai-center">
                 <MultiSelect :modelValue="selectedColumns" :options="columns" optionLabel="header" @update:modelValue="onSelection"
-                placeholder="Select Columns" style="width: 20em" :filter="true"/>
+                placeholder="Select Columns" :filter="true" class="w-1/2"/>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search" />
+                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                </span>
             </div>
         </template>
         <Column v-for="(col, index) of selectedColumns" :field="col.field" :header="col.header" :key="col.field + '_' + index"></Column>
@@ -55,6 +61,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import MultiSelect from 'primevue/multiselect'; 
 import InputText from 'primevue/inputtext';
+import {FilterMatchMode} from 'primevue/api';
 import XLSX  from 'xlsx';
 import { useStore } from 'vuex'
 
@@ -81,6 +88,10 @@ export default defineComponent({
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
         const selectedColumns: Ref<ColTemplate[]> = ref([]); 
+
+        const filters = ref(
+            {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
+        ); 
 
  
 
@@ -169,7 +180,7 @@ export default defineComponent({
                 store.commit('states/mutateXlsDisplayed', true)
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers };
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters };
     }
 });
 </script>

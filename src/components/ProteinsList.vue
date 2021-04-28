@@ -1,15 +1,20 @@
 <template>
-<div class="list p-2 overflow-scroll w-full">
+
+
+<div class="select-list p-2 overflow-scroll w-full">
+
+    
 <p class="font-bold mb-1">
 Filtered proteins list ({{points.length}}) :
 </p>
+
 <ul>
     <li 
     v-for="point in points" 
     :key="point"
-    class="hover:bg-light cursor-pointer"
+    class="list-item cursor-pointer"
     @click="clickProt(point.d.id)"
-    :class="{ 'bg-light': selectedProt.includes(point.d.id)}">
+    :class="{ 'selected': selectedProt.includes(point.d.id)}">
         {{point.d.id}} : {{point.d.fullName}} 
     </li>
 </ul>
@@ -21,10 +26,12 @@ import { defineComponent, ref, Ref, PropType, toRefs } from 'vue';
 import { useStore } from 'vuex'
 import { toggle } from '../utilities/Arrays'
 import { Points } from '../types/volcano'; 
+import Listbox from 'primevue/listbox';  
 
 
 
 export default defineComponent({
+    components : { Listbox }, 
     props : {
         points: {
             type: Array as PropType<Points[]>, 
@@ -59,11 +66,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-    .list{
-        height:500px; 
-        border:solid grey; 
-        border-width:1px; 
-        border-radius:5px; 
-        overflow-x:hidden; 
-    }
+
+
 </style>
