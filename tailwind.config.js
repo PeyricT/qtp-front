@@ -16,7 +16,8 @@ module.exports = {
       }
     },
     colors:{
-      primary: 'var(--primary-color)'
+      primary: 'var(--primary-color)',
+      pannelSelection : '#FDE68A'
     }
   },
   variants: {
