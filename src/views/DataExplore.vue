@@ -3,7 +3,6 @@
   <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
   <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
   <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
-
   <div class="relative">
     <div v-if="volcanoDisabled" class="disabled"/>
     <div>
@@ -15,7 +14,9 @@
 
       <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>
 
+      
       <div>
+        <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
         <Volcano 
             :data="plotData" 
             @volcano-drawed="volcanoDrawed=true"
@@ -45,6 +46,7 @@ import Warning from '@/components/global/Warning.vue';
 import ComputeORA from '@/components/ComputeORA.vue'
 import Listbox from 'primevue/listbox';
 import Button from 'primevue/button';
+import OpenableWarnMessage from '@/components/global/OpenableWarnMessage.vue'
 
 
 import { toggle } from '../utilities/Arrays';
@@ -60,7 +62,7 @@ interface SelectionInterface{
 export default defineComponent({
 
 
-  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA, Warning, Listbox, Button },
+  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA, Warning, Listbox, Button, OpenableWarnMessage},
 
   setup() {
 
@@ -93,6 +95,8 @@ export default defineComponent({
     const taxidWarning: Ref<Set<number>> = ref(new Set()); 
     const taxid: Ref<number> = ref(0); 
     const selectedProts : Ref<string[]> = ref([]); 
+
+    const nanProt: Ref<String[]> = ref([])
     
     const draw = () => {
       if(canDraw.value) {
@@ -107,11 +111,12 @@ export default defineComponent({
                 y: y_list[i], // aka 'none'
                 d: uniprotData[i]
           }))
-          .filter((point: t.Points) => !isNaN(point.x));
+
+        nanProt.value = points.filter((point: t.Points) => isNaN(point.x)).map((point : t.Points) => point.d.id); 
 
         plotData.xLabel = selected.value[0].name;
         plotData.yLabel = selected.value[1].name;
-        plotData.points = points; 
+        plotData.points = points.filter((point: t.Points) => !isNaN(point.x));; 
 
 
       }
@@ -174,7 +179,7 @@ export default defineComponent({
         
     });
 
-    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts} ;
+    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts, nanProt} ;
   }
 
 
