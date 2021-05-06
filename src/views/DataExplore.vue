@@ -17,10 +17,18 @@
       
       <div>
         <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
-        <Volcano 
-            :data="plotData" 
-            @volcano-drawed="volcanoDrawed=true"
-            @prot-selection-change="saveSelectedProtId"/>
+        <div class="flex">
+          <Volcano 
+              :data="plotData" 
+              @volcano-drawed="volcanoDrawed=true"
+              @prot-selection-change="saveSelectedProtId"/>
+          <ComputeORA v-if="volcanoDrawed && taxid"
+            @disable-volcano="volcanoDisabled=true"
+            @enable-volcano="volcanoDisabled=false"
+            :taxid="taxid"
+            :selectedProts="selectedProts"
+          />
+        </div>
       </div>
     </div>
   </div>

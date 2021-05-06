@@ -1,9 +1,11 @@
 <template>
-<div class="m-2">
+<div class="m-1 flex-col pouet">
     <Button :disabled="computationLaunched"
     @click="launchComputation"> 
-        Compute ORA on selected proteins
+        Compute pathways significance
     </Button>
+
+    <span v-if="computationLaunched" class="close hover:text-gray-500" @click="closeResults"> &times; </span>
     
     <div v-if="computationLaunched" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>

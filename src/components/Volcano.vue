@@ -31,6 +31,7 @@
                     <ProteinsList :points="filteredByPannelPoints" class="flex-grow-0 w-full"/>
                     <!-- go list -->
                     <GoList class="flex-grow-0 w-full" :go="goSelected"/>
+
                 </div>                
             </div>
 
@@ -59,9 +60,11 @@ import Error from '@/components/global/Error.vue';
 import Loader from '@/components/global/Loader.vue'; 
 import ProteinsList from '@/components/ProteinsList.vue'
 import GoList from '@/components/GoList.vue'
+import PathwayStats from '@/components/PathwayStats.vue'
+import Button from 'primevue/button'
 
 export default defineComponent({
-    components : { Error, ProteinsList, GoList, Loader }, 
+    components : { Error, ProteinsList, GoList, Loader, PathwayStats, Button }, 
 
     props: {
         data: {
@@ -114,6 +117,8 @@ export default defineComponent({
             store.commit("proteinSelection/initAllPoints", points)
             return points
         });
+
+        const statsComputed: Ref<boolean> = ref(false); 
 
         //METHODS
 
@@ -219,6 +224,10 @@ export default defineComponent({
             }
         })
 
+        const computeStats = () => {
+            statsComputed.value = true; 
+        }
+
 
         //WATCHERS 
         watch( (props.data), async (newData) =>{
@@ -254,7 +263,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed }
     }
 
 })
