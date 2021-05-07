@@ -1,18 +1,12 @@
 <template>
-<div class="m-1 flex-col pouet">
-    <Button :disabled="computationLaunched"
-    @click="launchComputation"> 
-        Compute pathways significance
-    </Button>
-
-    <span v-if="computationLaunched" class="close hover:text-gray-500" @click="closeResults"> &times; </span>
-    
+<div class="datatable">
+    <Button label="Compute pathways significance" @click="launchComputation" :disabled="computationLaunched"/>
     <div v-if="computationLaunched" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>
         <div v-if="resultsLoaded">
             <div v-if="Object.keys(ORAResultsList).length === 0"> No GO terms with significative p-value {{pvalue}} </div>
             <div v-else> 
-                <DataTable :value="ORAResultsList" class="p-datatable-sm" sortField="pvalue" :sortOrder="1" :scrollable="true">
+                <DataTable :value="ORAResultsList" class="datatable p-datatable-sm h-full" sortField="pvalue" :sortOrder="1" :scrollable="true" scrollHeight="500px">
                     <template #header>
                         <p class="text-lg">{{ORAResultsList.length}} GO terms with p-value &lt; {{pvalue}} </p>
                     </template>
@@ -23,7 +17,6 @@
             </div>
         </div>
     </div>
-    
 </div>
 </template>
 
@@ -52,6 +45,10 @@ export default defineComponent({
         selectedProts: {
             type: Array as PropType<string[]>,
             default:[]
+        },
+        allProts : {
+            type : Array as PropType<string[]>, 
+            default:[]
         }
     },
 
@@ -62,15 +59,13 @@ export default defineComponent({
         const ORAResultsList = ref({}); 
         const store = useStore(); 
         const pvalue = 0.1
+        const method = "fisher"; 
 
         const launchComputation = async () => {
             computationLaunched.value = true; 
-            emit('disable-volcano')
-            
-            const method = "fisher"; 
-            const expAccessions = store.getters.getColDataByName("Accession", 'string')
-            const apiInput: PwasAPIInput = {
-                proteinsExp : expAccessions,
+            emit('disable-go')
+                        const apiInput: PwasAPIInput = {
+                proteinsExp : props.allProts,
                 proteinsDelta : props.selectedProts, 
                 method: method, 
                 taxid: props.taxid, 
@@ -87,7 +82,6 @@ export default defineComponent({
                 const responseData = await response.json()
                 ORAResultsList.value = responseData.list
                 resultsLoaded.value = true; 
-                console.log("END")
             })
             
             
@@ -109,7 +103,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style>
 .close{
   cursor: pointer;
   color: #aaa;
@@ -117,4 +111,9 @@ export default defineComponent({
   font-size: 28px;
   font-weight: bold;
 }
+
+.datatable{
+    height:500px; 
+}
+
 </style>

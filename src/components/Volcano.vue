@@ -28,9 +28,18 @@
             <div v-if="volcanoDrawed" class="flex w-full mt-2 flex-col">
                 <div class="flex gap-4">
                 <!-- prot list -->
-                    <ProteinsList :points="filteredByPannelPoints" class="flex-grow-0 w-full"/>
+                    <ProteinsList :points="filteredByPannelPoints" class="w-1/3"/>
                     <!-- go list -->
-                    <GoList class="flex-grow-0 w-full" :go="goSelected"/>
+                    <div class="flex w-2/3 gap-2">
+                        <GoList :class="goPartWidth.list" :go="goSelected" :disabled="goDisabled"/>
+                        <PathwayStats 
+                            :class="goPartWidth.stats"
+                            :selectedProts="filteredByPannelPoints.map(point => point.d.id)"
+                            :allProts="allPoints.map(point => point.d.id)"
+                            :taxid="taxid"
+                            @disable-go="disableGO"/>
+                    </div>
+
 
                 </div>                
             </div>
@@ -43,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, toRefs, Ref, watch, onMounted, computed, onUnmounted } from 'vue'; 
+import { defineComponent, PropType, ref, toRefs, Ref, watch, onMounted, computed, onUnmounted, reactive } from 'vue'; 
 
 import * as d3 from "d3";
 
@@ -89,6 +98,10 @@ export default defineComponent({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        taxid : {
+            type: Number as PropType<number>,
+            default: 0
         }
     },
 
@@ -119,6 +132,9 @@ export default defineComponent({
         });
 
         const statsComputed: Ref<boolean> = ref(false); 
+        const goDisabled: Ref<boolean> = ref(false); 
+
+        const goPartWidth = reactive({'list' : 'w-3/4', 'stats': 'w-1/4'})
 
         //METHODS
 
@@ -224,8 +240,10 @@ export default defineComponent({
             }
         })
 
-        const computeStats = () => {
-            statsComputed.value = true; 
+        const disableGO = () => {
+            goDisabled.value = true; 
+            goPartWidth.list = 'w-1/5'
+            goPartWidth.stats = 'w-4/5'
         }
 
 
@@ -263,7 +281,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints }
     }
 
 })

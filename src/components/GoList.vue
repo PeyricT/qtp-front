@@ -1,6 +1,6 @@
 <template>
 <div class="relative">
-    <div v-if="test" class="disabled"/>
+    <div v-if="disabled" class="disabled"/>
     <div class="select-list p-2 overflow-scroll w-full">
         <p class="font-bold mb-1"> Filtered GO list ({{Object.keys(go).length}})</p>
         <ul>
@@ -33,6 +33,10 @@ export default defineComponent({
         go: {
             type : Object as PropType<GOIndexed>, 
             default : {}
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>, 
+            default: false
         }
     }, 
 

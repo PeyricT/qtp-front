@@ -20,14 +20,9 @@
         <div class="flex">
           <Volcano 
               :data="plotData" 
+              :taxid="taxid"
               @volcano-drawed="volcanoDrawed=true"
               @prot-selection-change="saveSelectedProtId"/>
-          <ComputeORA v-if="volcanoDrawed && taxid"
-            @disable-volcano="volcanoDisabled=true"
-            @enable-volcano="volcanoDisabled=false"
-            :taxid="taxid"
-            :selectedProts="selectedProts"
-          />
         </div>
       </div>
     </div>
