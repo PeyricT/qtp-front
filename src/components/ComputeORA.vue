@@ -59,7 +59,7 @@ export default defineComponent({
         const computationLaunched = ref(false); 
         const ORAResultsList = ref({}); 
         const store = useStore(); 
-        const pvalue = 0.1
+        const pvalue = 0.5
 
         const launchComputation = async () => {
             computationLaunched.value = true; 
@@ -75,6 +75,7 @@ export default defineComponent({
                 pvalue: pvalue
             }
 
+            console.log("pwas input", apiInput)
             fetch(`/api/pwas/ora`, {
                 method: 'POST',
                 body: JSON.stringify(apiInput),
@@ -83,7 +84,7 @@ export default defineComponent({
                 'Content-Type': 'application/json'
             }}).then(async (response) => {
                 const responseData = await response.json()
-                ORAResultsList.value = responseData.list
+                ORAResultsList.value = responseData.fusedNS.list
                 resultsLoaded.value = true; 
                 console.log("END")
             })
