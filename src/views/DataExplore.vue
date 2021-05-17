@@ -3,19 +3,14 @@
   <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
   <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
   <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
-  <div class="relative">
-    <div v-if="volcanoDisabled" class="disabled"/>
-    <div>
-      <Listbox v-model="selected" :options="availableData" :multiple="true" :filter="true" filterPlaceholder="Search" listStyle="max-height:250px" optionLabel="name">
+      <!--<Listbox v-model="selected" :options="availableData" :multiple="true" :filter="true" filterPlaceholder="Search" listStyle="max-height:250px" optionLabel="name">
       <template #header>
         <p class="pl-3 pt-3 text-xl font-semibold"> Choose data records to display (x and y axes) </p>
       </template>
       </Listbox>
-
-      <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>
-
-      
-      <div>
+      <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>-->
+    <AddPlot/>
+    <div>
         <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
         <div class="flex">
           <Volcano 
@@ -24,9 +19,7 @@
               @volcano-drawed="volcanoDrawed=true"
               @prot-selection-change="saveSelectedProtId"/>
         </div>
-      </div>
     </div>
-  </div>
   <ComputeORA v-if="volcanoDrawed && taxid"
           @disable-volcano="volcanoDisabled=true"
           @enable-volcano="volcanoDisabled=false"
@@ -50,6 +43,7 @@ import ComputeORA from '@/components/ComputeORA.vue'
 import Listbox from 'primevue/listbox';
 import Button from 'primevue/button';
 import OpenableWarnMessage from '@/components/global/OpenableWarnMessage.vue'
+import AddPlot from '@/components/AddPlot.vue'
 
 
 import { toggle } from '../utilities/Arrays';
@@ -65,7 +59,7 @@ interface SelectionInterface{
 export default defineComponent({
 
 
-  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA, Warning, Listbox, Button, OpenableWarnMessage},
+  components: { /*Sliders,*/ Volcano, ProteinsList, GoList, Error, Loader, ComputeORA, Warning, Listbox, Button, OpenableWarnMessage, AddPlot },
 
   setup() {
 

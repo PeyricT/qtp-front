@@ -37,7 +37,8 @@
                             :selectedProts="filteredByPannelPoints.map(point => point.d.id)"
                             :allProts="allPoints.map(point => point.d.id)"
                             :taxid="taxid"
-                            @disable-go="disableGO"/>
+                            @disable-go="disableGO"
+                            :refresh="triggerStatsRefresh"/>
                     </div>
 
 
@@ -135,6 +136,7 @@ export default defineComponent({
         const goDisabled: Ref<boolean> = ref(false); 
 
         const goPartWidth = reactive({'list' : 'w-3/4', 'stats': 'w-1/4'})
+        const triggerStatsRefresh = ref(false); 
 
         //METHODS
 
@@ -211,15 +213,25 @@ export default defineComponent({
         }
 
         const removeFilterPoints = (predicateFn: (point: Points) => boolean) => {
-            filteredByPannelPoints.value = filteredByPannelPoints.value.filter(point => !predicateFn(point))
+            console.log("REMOVE POINTS")
+            const newPoints = filteredByPannelPoints.value.filter(point => !predicateFn(point))
+            console.log(goDisabled) 
+            if((newPoints.length !== filteredByPannelPoints.value.length) && goDisabled.value){
+                console.log("POUET", goDisabled); 
+                triggerStatsRefresh.value = true; 
+                enableGO(); 
+            }
+            filteredByPannelPoints.value = newPoints
             emit("prot-selection-change", filteredByPannelPoints.value)
         }
 
         const addFilterPoints = (predicateFn: (point:Points) => boolean) => {
+            console.log("ADD POINTS")
             filteredByPannelPoints.value = filteredByPannelPoints.value.concat(allPoints.value.filter(point => predicateFn(point)))
             emit("prot-selection-change", filteredByPannelPoints.value)
 
         }
+
     
 
         const filterPredicateLayerCoords = (layer_coords: {x1:number, x2:number, y1:number, y2:number}, xScale: d3.ScaleLinear<number, number>, yScale: d3.ScaleLinear<number, number>)  => {
@@ -246,6 +258,12 @@ export default defineComponent({
             goPartWidth.stats = 'w-4/5'
         }
 
+        const enableGO = () => {
+            goDisabled.value = false; 
+            goPartWidth.list = 'w-3/4'
+            goPartWidth.stats = 'w-1/4'
+        }
+
 
         //WATCHERS 
         watch( (props.data), async (newData) =>{
@@ -257,7 +275,6 @@ export default defineComponent({
         });
 
         watch ( (filteredByPannelPoints), () => {
-            console.log("GO transform")
             //goLoaded.value = false; 
             const serializedData = JSON.parse(JSON.stringify(filteredByPannelPoints.value.map(p => p.d)))
             protToGoWorker.postMessage(serializedData);
@@ -281,7 +298,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, triggerStatsRefresh }
     }
 
 })

@@ -1,6 +1,7 @@
 <template>
 <div class="datatable">
-    <Button label="Compute pathways significance" @click="launchComputation" :disabled="computationLaunched"/>
+    <Button v-if="refresh" label="Refresh pathway significance" @click="launchComputation"/>
+    <Button v-else label="Compute pathways significance" :disabled="computationLaunched" @click="launchComputation"/>
     <div v-if="computationLaunched" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>
         <div v-if="resultsLoaded">
@@ -22,7 +23,7 @@
 
 <script lang="ts">
 
-import { defineComponent, ref, PropType } from 'vue'; 
+import { defineComponent, ref, PropType, onMounted, onUpdated, watch } from 'vue'; 
 import { useStore } from 'vuex';
 
 import { PwasAPIInput } from '../types/ora'
@@ -49,6 +50,10 @@ export default defineComponent({
         allProts : {
             type : Array as PropType<string[]>, 
             default:[]
+        }, 
+        refresh : {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -61,10 +66,11 @@ export default defineComponent({
         const pvalue = 0.1
         const method = "fisher"; 
 
+
         const launchComputation = async () => {
             computationLaunched.value = true; 
             emit('disable-go')
-                        const apiInput: PwasAPIInput = {
+            const apiInput: PwasAPIInput = {
                 proteinsExp : props.allProts,
                 proteinsDelta : props.selectedProts, 
                 method: method, 
@@ -93,7 +99,10 @@ export default defineComponent({
             resultsLoaded.value = false; 
             emit('enable-volcano')
         }
+        
 
+        onUpdated( () => {
+         })
     
     return { launchComputation, resultsLoaded, computationLaunched, closeResults, ORAResultsList, pvalue}
 
