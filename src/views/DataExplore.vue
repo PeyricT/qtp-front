@@ -9,8 +9,11 @@
       </template>
       </Listbox>
       <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>-->
-    <AddPlot/>
-    <div>
+    <AddPlot :data="availableData" @new-plot="drawNewPlot"/>
+    <div v-for="plotData in plotsData" :key="plotData.key">
+      X = {{plotData.xLabel}} Y = {{plotData.yLabel}}
+    </div> 
+    <!--<div>
         <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
         <div class="flex">
           <Volcano 
@@ -25,12 +28,12 @@
           @enable-volcano="volcanoDisabled=false"
           :taxid="taxid"
           :selectedProts="selectedProts"
-          />
+          />-->
 </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, Ref, reactive, onMounted, onUnmounted, onUpdated } from 'vue';
+import { defineComponent, computed, ref, Ref, reactive, onMounted, ComputedRef } from 'vue';
 import { useStore, mapGetters } from 'vuex'
 //import Sliders from '@/components/Sliders.vue';
 import Volcano from '@/components/Volcano.vue';
@@ -52,10 +55,6 @@ import { logDB } from '../utilities/uniprot-storage';
 const UniprotDatabase = logDB(); 
 import * as t from '../types/volcano';
 
-interface SelectionInterface{
-  name: string
-}
-
 export default defineComponent({
 
 
@@ -69,6 +68,8 @@ export default defineComponent({
     const store = useStore();
     const plotData: t.PlotData = reactive({xLabel : '', yLabel: '', points: []}) 
 
+    const plotsData: Ref<t.PlotData[]> = ref([])
+
     const transformation = ref("none"); 
 
 
@@ -76,7 +77,7 @@ export default defineComponent({
     const volcanoDisabled = ref(false); 
 
     const selectable = computed( () => store.getters.getActiveSheet != null );
-    const selected: Ref<SelectionInterface[]> = ref([]);
+    const selected: Ref<t.SelectionInterface[]> = ref([]);
     const select = (field: string) => {
           const _ = toggle(selected.value, field);
           selected.value = _.length <= 2 ? _ : _.slice(-2) ;
@@ -84,8 +85,7 @@ export default defineComponent({
 
     //const isSelected = (field: string) => selected.value.includes(field);
 
-    const availableData = computed( () => store.getters.getSelectedHeaders.map((header:string) => { return { name : header } }));
-
+    const availableData: ComputedRef<t.SelectionInterface[]> = computed( () => store.getters.getSelectedHeaders.map((header:string) => { return { name : header }}));
     const canDraw = computed(() => selected.value.length === 2);
 
     let uniprotData: t.PointData[] = [];
@@ -119,6 +119,23 @@ export default defineComponent({
       }
     }
 
+    const drawTest = (xAxis : string, yAxis: string) => {
+
+      //TO DO : HANDLE ALL NaN STUFF
+
+      const x_list = store.getters.getColDataByName(xAxis, 'number')
+      const y_list = store.getters.getColDataByName(yAxis, 'number')
+      const points: t.Points[] = x_list.map((e: number, i: number) => ({
+                x:e, 
+                y: y_list[i],
+                d: uniprotData[i]
+      }))
+      //nanProt.value = points.filter((point: t.Points) => isNaN(point.x)).map((point : t.Points) => point.d.id); 
+      const newPlotData = {xLabel : xAxis, yLabel: yAxis, points : points.filter(point => !(isNaN(point.x)|| isNaN(point.y)))}
+      plotsData.value.push(newPlotData); // TO DO : CHECK IF ALREADY EXISTS
+
+    }
+
     const getProtData = async (): Promise<t.PointData[]> => {      
       const getDataPromise = (acc: string): Promise<t.PointData> => {
         return new Promise((resolve, reject) => {
@@ -144,6 +161,13 @@ export default defineComponent({
 
     const saveSelectedProtId = (protData: t.Points[]) => {
       selectedProts.value = protData.map(prot => prot.d.id); 
+    }
+
+    const drawNewPlot = (xAxis: string, yAxis: string) => {
+      console.log("draw new plot", xAxis, yAxis)
+      drawTest(xAxis, yAxis)
+
+
     }
 
    onMounted(() => {
@@ -176,7 +200,7 @@ export default defineComponent({
         
     });
 
-    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts, nanProt} ;
+    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts, nanProt, drawNewPlot, plotsData} ;
   }
 
 

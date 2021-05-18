@@ -46,4 +46,8 @@ interface GOObject{
     proteins: string[]
 }
 
+export interface SelectionInterface {
+    name: string
+}
+
 export{ Points, PlotData, transform, PointData, GOData, GOIndexed};
