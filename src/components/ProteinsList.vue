@@ -44,7 +44,7 @@ export default defineComponent({
     },
   },
 
-  setup(props) {
+  setup(props, {emit}) {
     //ATTRIBUTES
     const store = useStore();
     const selectedProt: Ref<string[]> = ref([]);
@@ -59,7 +59,9 @@ export default defineComponent({
         return false;
       };
 
-      store.commit("proteinSelection/filterHighlight", filterPredicate);
+      //store.commit("proteinSelection/filterHighlight", filterPredicate);
+      console.log("selectedProt", selectedProt.value); 
+      emit('click-on-prot', selectedProt.value)
     };
 
     const downloadProteins = () => {

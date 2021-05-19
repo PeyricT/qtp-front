@@ -28,7 +28,7 @@
             <div v-if="volcanoDrawed" class="flex w-full mt-2 flex-col">
                 <div class="flex gap-4">
                 <!-- prot list -->
-                    <ProteinsList :points="filteredByPannelPoints" class="w-1/3"/>
+                    <ProteinsList :points="filteredByPannelPoints" class="w-1/3" @click-on-prot="highlightPoints"/>
                     <!-- go list -->
                     <div class="flex w-2/3 gap-2">
                         <GoList :class="goPartWidth.list" :go="goSelected" :disabled="goDisabled"/>
@@ -53,7 +53,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, toRefs, Ref, watch, onMounted, computed, onUnmounted, reactive } from 'vue'; 
+import { defineComponent, PropType, ref, toRefs, Ref, watch, onMounted, computed, onUnmounted, reactive, ComputedRef } from 'vue'; 
 
 import * as d3 from "d3";
 
@@ -103,15 +103,20 @@ export default defineComponent({
         taxid : {
             type: Number as PropType<number>,
             default: 0
+        }, 
+        plotNumber : {
+            type : Number as PropType<number>, 
+            default : 0
         }
     },
 
     setup(props, {emit}){
-
+        
+        const data = toRefs(props).data 
         const protToGoWorker = new Worker('@/workers/protToGoWorker.ts', {type: 'module'})
         //ATTRIBUTES
         const error = ref(false); 
-        const svgRoot: Ref<SVGSVGElement|null> = ref(null);
+        const svgRoot: Ref<SVGSVGElement|null> = ref(null)
         const transformy: Ref<transform> = ref("none"); 
         const volcano: Ref<VolcanoPlot|null> = ref(null); //Save the volcano object
         const volcanoDrawed = ref(false); 
@@ -120,7 +125,7 @@ export default defineComponent({
         const goLoaded = ref(false); 
         const store = useStore();
 
-        const allPoints = computed(() => {
+        const allPoints: ComputedRef<Points[]> = computed(() => {
             const points = props.data.points.map(point => ({
                 x: point.x, 
                 y: transformy.value == '-log10' ? (-1)*Math.log10(point.y)
@@ -128,7 +133,7 @@ export default defineComponent({
                                           : point.y, // aka 'none'
                 d : point.d
             }))
-            store.commit("proteinSelection/initAllPoints", points)
+            //store.commit("proteinSelection/initAllPoints", points)
             return points
         });
 
@@ -142,15 +147,14 @@ export default defineComponent({
 
         const draw = async(data : PlotData) => {
             erase(); 
-
+            //console.log("draw plot")
             const layerUI = new ActiveLayers(svgRoot.value as SVGSVGElement);
             const axis = new Axis(svgRoot.value as SVGSVGElement,
                                   props.height, props.width,
                                   transformy.value != "none" ? transformy.value : undefined );
-
+            //console.log(data.xLabel, data.yLabel); 
             axis.draw(allPoints.value, data.xLabel, data.yLabel);
             layerUI.activeArea = axis.getActiveCorners();
-            
             volcano.value = new VolcanoPlot(svgRoot.value as SVGSVGElement,
                                   axis.xScale,
                                   axis.yScale,
@@ -264,9 +268,20 @@ export default defineComponent({
             goPartWidth.stats = 'w-1/4'
         }
 
+        const highlightPoints = (selectedProteins: string[]) => {
+            //Get svg points from prot ids
+            const svgPoints = allPoints.value.filter(point => selectedProteins.includes(point.d.id)).map(p => p.svg)
+            const volcano_plot = volcano.value as VolcanoPlot
+            console.log("currentVolcano", volcano_plot)
+            volcano_plot.redrawCircle(svgPoints); 
+
+
+        } 
+
 
         //WATCHERS 
         watch( (props.data), async (newData) =>{
+            console.log("data change"); 
             await draw(newData);          
         });
 
@@ -281,10 +296,16 @@ export default defineComponent({
         })
 
         onMounted( () => {
+            console.log("Volcano mounted")
+            //console.log(svgRoot.value)
+            console.log(data.value.xLabel)
             d3.select(svgRoot.value)
             .attr("height", props.height)
             .attr("width", props.width)
-            .attr("class", "volcano-svg-component");
+            .attr("class", `volcano-svg-component-${props.plotNumber}`);
+
+            draw(data.value); 
+
 
             protToGoWorker.onmessage = event => {
                 const data = event.data as GOIndexed; 
@@ -298,7 +319,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, triggerStatsRefresh }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, triggerStatsRefresh, highlightPoints, data }
     }
 
 })

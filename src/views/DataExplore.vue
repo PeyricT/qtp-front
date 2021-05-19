@@ -10,8 +10,10 @@
       </Listbox>
       <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>-->
     <AddPlot :data="availableData" @new-plot="drawNewPlot"/>
-    <div v-for="plotData in plotsData" :key="plotData.key">
-      X = {{plotData.xLabel}} Y = {{plotData.yLabel}}
+    <div v-for="(plotData, key) in plotsData" :key="key">
+      {{plotData.xLabel}}
+      {{plotData.yLabel}}
+      <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
     </div> 
     <!--<div>
         <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
@@ -164,10 +166,7 @@ export default defineComponent({
     }
 
     const drawNewPlot = (xAxis: string, yAxis: string) => {
-      console.log("draw new plot", xAxis, yAxis)
       drawTest(xAxis, yAxis)
-
-
     }
 
    onMounted(() => {
