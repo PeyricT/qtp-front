@@ -86,7 +86,8 @@ export default defineComponent({
                 'Content-Type': 'application/json'
             }}).then(async (response) => {
                 const responseData = await response.json()
-                ORAResultsList.value = responseData.list
+                console.log(responseData); 
+                ORAResultsList.value = responseData.fusedNS.list
                 resultsLoaded.value = true; 
             })
             
