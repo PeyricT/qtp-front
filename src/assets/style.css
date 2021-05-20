@@ -24,3 +24,16 @@
     border-radius:5px; 
     overflow-x:hidden; 
 }
+
+.p-listbox .p-listbox-list .p-listbox-item{
+    padding:0;
+    padding-left:0.5rem; 
+}
+
+.p-listbox .p-listbox-header .p-listbox-filter{
+    height: 1rem; 
+}
+
+.p-listbox .p-listbox-header{
+    padding : 0 0.5rem 0.5rem
+}

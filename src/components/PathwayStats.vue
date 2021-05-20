@@ -14,6 +14,7 @@
                     <Column field="go" header="GO Term" :sortable="true"/>
                     <Column field="name" header="Name" :sortable="true"/>
                     <Column field="pvalue" header="P-value" :sortable="true"/>
+                    <Column field="ns" header="NS" :sortable="true"/>
                 </DataTable>
             </div>
         </div>

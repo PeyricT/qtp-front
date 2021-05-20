@@ -89,8 +89,6 @@ export default createStore({
     getSelectedHeaders(state, getters):  string[]{
       const _: string[] = []
       const nCol = getters.dimensions[1]; 
-      console.log("getSelectedHeaders"); 
-      console.log(state.selectedCol); 
       for (let c=0; c < nCol ; c++) {
         if (state.selectedCol.includes(c)) _.push(getters.cell(0,c))
       }
