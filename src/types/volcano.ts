@@ -41,7 +41,7 @@ interface GOIndexed{
     [go_id: string] : GOObject
 }
 
-interface GOObject{
+export interface GOObject{
     go: GOData
     proteins: string[]
 }

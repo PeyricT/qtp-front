@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import {GOIndexed, PointData, GOData, Points} from '../types/volcano';
+import {GOIndexed, PointData, GOData, GOObject} from '../types/volcano';
 
 const ctx: Worker = self as any; 
 
@@ -8,13 +8,13 @@ function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-const sortHash = (hashmap: GOIndexed) => {
-    const sorted_hash: GOIndexed = {}
+const sortAndFlat = (hashmap: GOIndexed) => {
+    const sortedList: GOObject[] = []
     Object.keys(hashmap)
-    .sort((a:string,b:string) => hashmap[b].proteins.length - hashmap[a].proteins.length)
-    .forEach(go_id => sorted_hash[go_id] = hashmap[go_id])
+        .sort((a:string,b:string) => hashmap[b].proteins.length - hashmap[a].proteins.length)
+        .forEach(go_id => sortedList.push(hashmap[go_id]))
 
-    return sorted_hash; 
+    return sortedList; 
 }
 
 addEventListener("message", async event => {
@@ -26,7 +26,7 @@ addEventListener("message", async event => {
             goData[go.id].proteins.push(point.id)
         })
     })
-    const sortedData = sortHash(goData) 
+    const sortedData = sortAndFlat(goData) 
 
     ctx.postMessage(sortedData); 
 })

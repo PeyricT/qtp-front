@@ -134,7 +134,8 @@ export default defineComponent({
       }))
       //nanProt.value = points.filter((point: t.Points) => isNaN(point.x)).map((point : t.Points) => point.d.id); 
       const newPlotData = {xLabel : xAxis, yLabel: yAxis, points : points.filter(point => !(isNaN(point.x)|| isNaN(point.y)))}
-      plotsData.value.push(newPlotData); // TO DO : CHECK IF ALREADY EXISTS
+      console.log("data", newPlotData); 
+      plotsData.value.push(newPlotData); 
 
     }
 

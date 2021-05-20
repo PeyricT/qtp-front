@@ -13,26 +13,7 @@
     </template>
     
     </Listbox>
-
-    <!--<div class="select-list p-2 overflow-scroll w-full">
-      <p class="font-bold mb-1">
-        Filtered proteins list ({{ points.length }}) :
-      </p>
-
-      <ul>
-        <li
-          v-for="point in points"
-          :key="point"
-          class="list-item cursor-pointer"
-          @click="clickProt(point.d.id)"
-          :class="{ selected: selectedProt.includes(point.d.id) }"
-        >
-          {{ point.d.id }} : {{ point.d.fullName }}
-        </li>
-      </ul>
-    </div>
-
-    <Button class="p-button-outlined w-full mt-3" @click="downloadProteins">
+    <!--<Button class="p-button-outlined w-full mt-3" @click="downloadProteins">
       <div class="flex-auto space-x-1">
         <i class="pi pi-download" />
         <span> Download proteins list </span>
