@@ -26,7 +26,7 @@ addEventListener("message", async event => {
             goData[go.id].proteins.push(point.id)
         })
     })
-    const sortedData = sortAndFlat(goData) 
+    const sortedData = sortAndFlat(goData); 
 
     ctx.postMessage(sortedData); 
 })

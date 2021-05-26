@@ -38,7 +38,8 @@
                             :allProts="allPoints.map(point => point.d.id)"
                             :taxid="taxid"
                             @disable-go="disableGO"
-                            :refresh="triggerStatsRefresh"/>
+                            :refresh="triggerStatsRefresh"
+                            @click-on-go="highlightFromGo"/>
                     </div>
 
 
@@ -217,23 +218,24 @@ export default defineComponent({
         }
 
         const removeFilterPoints = (predicateFn: (point: Points) => boolean) => {
-            console.log("REMOVE POINTS")
             const newPoints = filteredByPannelPoints.value.filter(point => !predicateFn(point))
-            console.log(goDisabled) 
+            filterPointsAction(newPoints); 
+            
+        }
+
+
+        const addFilterPoints = (predicateFn: (point:Points) => boolean) => {
+            const newPoints = filteredByPannelPoints.value.concat(allPoints.value.filter(point => predicateFn(point)))
+            filterPointsAction(newPoints); 
+        }
+
+        const filterPointsAction = (newPoints : Points[]) => {
             if((newPoints.length !== filteredByPannelPoints.value.length) && goDisabled.value){
-                console.log("POUET", goDisabled); 
                 triggerStatsRefresh.value = true; 
                 enableGO(); 
             }
             filteredByPannelPoints.value = newPoints
             emit("prot-selection-change", filteredByPannelPoints.value)
-        }
-
-        const addFilterPoints = (predicateFn: (point:Points) => boolean) => {
-            console.log("ADD POINTS")
-            filteredByPannelPoints.value = filteredByPannelPoints.value.concat(allPoints.value.filter(point => predicateFn(point)))
-            emit("prot-selection-change", filteredByPannelPoints.value)
-
         }
     
 
@@ -259,6 +261,7 @@ export default defineComponent({
             goDisabled.value = true; 
             goPartWidth.list = 'w-1/5'
             goPartWidth.stats = 'w-4/5'
+            triggerStatsRefresh.value = false; 
         }
 
         const enableGO = () => {
@@ -295,6 +298,7 @@ export default defineComponent({
             }
 
             const filteredPoints = filterPoints(predicateFn)
+            console.log("filter", filteredPoints);
             highlightPoints(filteredPoints.map(p => p.svg))
         }
 
@@ -325,7 +329,6 @@ export default defineComponent({
             .attr("class", `volcano-svg-component-${props.plotNumber}`);
 
             draw(data.value); 
-
 
             protToGoWorker.onmessage = event => {
                 const data = event.data as GOObject[]; 

@@ -1,13 +1,13 @@
 <template>
 <div class="datatable">
-    <Button v-if="refresh" label="Refresh pathway significance" @click="launchComputation"/>
-    <Button v-else label="Compute pathways significance" :disabled="computationLaunched" @click="launchComputation"/>
-    <div v-if="computationLaunched" class="bg-gray-100">
+    <Button label="Compute pathways significance" :disabled="computationLaunched && !refresh" @click="launchComputation"/>
+    <div v-if="computationLaunched && !refresh" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>
         <div v-if="resultsLoaded">
             <div v-if="Object.keys(ORAResultsList).length === 0"> No GO terms with significative p-value {{pvalue}} </div>
             <div v-else> 
-                <DataTable :value="ORAResultsList" class="datatable p-datatable-sm h-full" sortField="pvalue" :sortOrder="1" :scrollable="true" scrollHeight="500px">
+                <DataTable :value="ORAResultsList" class="datatable p-datatable-sm h-full" sortField="pvalue" :sortOrder="1" :scrollable="true" scrollHeight="500px" v-model:selection="selectedRow" selectionMode="multiple" :metaKeySelection="false"
+                @rowSelect="clickRow" @rowUnselect="clickRow">
                     <template #header>
                         <p class="text-lg">{{ORAResultsList.length}} GO terms with p-value &lt; {{pvalue}} </p>
                     </template>
@@ -24,7 +24,7 @@
 
 <script lang="ts">
 
-import { defineComponent, ref, PropType, onMounted, onUpdated, watch } from 'vue'; 
+import { defineComponent, ref, PropType, onMounted, onUpdated, Ref, toRefs, watch } from 'vue'; 
 import { useStore } from 'vuex';
 
 import { PwasAPIInput } from '../types/ora'
@@ -62,14 +62,17 @@ export default defineComponent({
 
         const resultsLoaded = ref(false); 
         const computationLaunched = ref(false); 
-        const ORAResultsList = ref({}); 
-        const store = useStore(); 
+        const ORAResultsList: Ref<any[]> = ref([]); //TO DO TYPING
         const pvalue = 0.1
         const method = "fisher"; 
+        const selectedRow: Ref<any[]> = ref([]); 
+        const refresh = toRefs(props).refresh
 
 
         const launchComputation = async () => {
+            resultsLoaded.value = false; 
             computationLaunched.value = true; 
+            //refresh.value = false; 
             emit('disable-go')
             const apiInput: PwasAPIInput = {
                 proteinsExp : props.allProts,
@@ -90,9 +93,8 @@ export default defineComponent({
                 console.log(responseData); 
                 ORAResultsList.value = responseData.fusedNS.list
                 resultsLoaded.value = true; 
-            })
-            
-            
+                console.log("TEST", ORAResultsList.value.filter(row => row.go === "GO:0019400"))
+            }) 
         }
 
         const closeResults = () => {
@@ -101,12 +103,18 @@ export default defineComponent({
             resultsLoaded.value = false; 
             emit('enable-volcano')
         }
-        
 
-        onUpdated( () => {
-         })
+        const clickRow = () => {
+            emit('click-on-go', selectedRow.value.map(row => row.go))
+        }
+
+        //watch(refresh, (newData) => {
+        //    console.log("watch refresh", newData); 
+        //    computationLaunched.value = false; 
+        //})
+        
     
-    return { launchComputation, resultsLoaded, computationLaunched, closeResults, ORAResultsList, pvalue}
+    return { launchComputation, resultsLoaded, computationLaunched, closeResults, ORAResultsList, pvalue, selectedRow, clickRow}
 
     }
 
