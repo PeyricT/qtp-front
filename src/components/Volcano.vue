@@ -31,7 +31,10 @@
                     <ProteinsList :points="filteredByPannelPoints" class="w-1/3" @click-on-prot="highlighFromProt"/>
                     <!-- go list -->
                     <div class="flex w-2/3 gap-2">
-                        <GoList :class="goPartWidth.list" :go="goSelected" :disabled="goDisabled" @click-on-go="highlightFromGo"/>
+                        <div :class="goPartWidth.list">
+                            <Loader v-if="!goLoaded" :class="goPartWidth.list" message="GO terms are loading..."/>
+                            <GoList v-else :go="goSelected" :disabled="goDisabled" @click-on-go="highlightFromGo"/>
+                        </div>
                         <PathwayStats 
                             :class="goPartWidth.stats"
                             :selectedProts="filteredByPannelPoints.map(point => point.d.id)"
@@ -290,8 +293,9 @@ export default defineComponent({
         }
 
         const highlightFromGo = (selectedGO : string[]) => {
+            console.log("highlightFromGo", selectedGO); 
             const predicateFn = (point: Points) => {
-                const pointGO = point.d.GO.map(go => go.id)
+                const pointGO = point.d.unigoGO.map(go => go.go)
                 const intersect = selectedGO.filter(go_id => pointGO.includes(go_id))
                 if (intersect.length === 0) return false
                 else return true
@@ -314,7 +318,7 @@ export default defineComponent({
         });
 
         watch ( (filteredByPannelPoints), () => {
-            //goLoaded.value = false; 
+            goLoaded.value = false; 
             const serializedData = JSON.parse(JSON.stringify(filteredByPannelPoints.value.map(p => p.d)))
             protToGoWorker.postMessage(serializedData);
         })

@@ -21,12 +21,13 @@ addEventListener("message", async event => {
     const data = event.data as PointData[]
     const goData:GOIndexed = {}
     data.forEach((point: PointData) => {
-        point.GO.forEach((go : GOData) => {
-            if(!(go.id in goData)) goData[go.id] = {go, proteins:[]}
-            goData[go.id].proteins.push(point.id)
+        point.unigoGO.forEach((go) => {
+            if(!(go.go in goData)) goData[go.go] = {go, proteins:[]}
+            goData[go.go].proteins.push(point.id)
         })
     })
     const sortedData = sortAndFlat(goData); 
+    console.log("sortedData", sortedData)
 
     ctx.postMessage(sortedData); 
 })

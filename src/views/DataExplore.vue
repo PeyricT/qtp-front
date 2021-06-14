@@ -178,7 +178,6 @@ export default defineComponent({
         getProtData()
           .then((values) => {
             console.log("prot data loaded")
-            
             uniprotData = values
             checkTaxidProtData()
               .then((taxids_resp: Set<number>) => {

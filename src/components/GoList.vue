@@ -9,7 +9,7 @@
         </template>
         <template #option="slotProps">
         <div>
-            <span>{{slotProps.option.id}} : {{slotProps.option.name}} </span>
+            <span>{{slotProps.option.id}} : {{slotProps.option.name}}</span>
         </div>
         </template>
     </Listbox>
@@ -19,16 +19,15 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref, Ref, toRefs, computed } from 'vue';
-import { GOObject, Points} from '../types/volcano';
-import { useStore } from 'vuex';
-import { toggle } from '../utilities/Arrays';
+import { GOObject } from '../types/volcano';
 
 import Loader from '@/components/global/Loader.vue'
 import Listbox from 'primevue/listbox'
 
 interface GOSelectionInterface{
     id: string, 
-    name: string
+    name: string, 
+    proteins: string[]
 }
 
 export default defineComponent({
@@ -51,11 +50,11 @@ export default defineComponent({
         const filterFields = ["id", "name"]
 
         const formattedToDisplay = computed(() => {
-            return go.value.map(goElmt => ({id:goElmt.go.id, name:goElmt.go.term}))
+            return go.value.map(goElmt => ({id:goElmt.go.go, name:goElmt.go.name, prots: goElmt.proteins}))
         })
 
         const clickSelection = () => {
-            emit("click-on-go", goSelection.value.map(go => go.id))
+            emit("click-on-go", goSelection.value.map(go => go.proteins))
         }
 
         return {clickSelection, goSelection, formattedToDisplay, filterFields}

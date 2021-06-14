@@ -129,13 +129,13 @@ export default defineComponent({
             }
         }
 
-        const storeInUniprotDatabase = (): Promise<number> => {
+        const storeInUniprotDatabase = (): Promise<boolean> => {
             console.log("storeInUniprotDatabase")
             return new Promise((res, rej) => {
                 const uniprotIdList: string[]|undefined = store.getters.getColDataByName("Accession", "string");
                 if (uniprotIdList){
                     UniprotDatabase.add(uniprotIdList)
-                        .then((nbAdd:number) => res(nbAdd))
+                        .then(() => res(true))
                         .catch(err => rej(err))
                 }
                 else rej(Error("Can't fill up uniprot database. No uniprot ids"))

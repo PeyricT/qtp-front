@@ -25,6 +25,7 @@ interface PointData{
     name: string; 
     GO: GOData[]; 
     taxid: number; 
+    unigoGO: UnigoGOObject[]; 
 
 }
 
@@ -42,8 +43,15 @@ interface GOIndexed{
 }
 
 export interface GOObject{
-    go: GOData
+    go: UnigoGOObject
     proteins: string[]
+}
+
+
+export interface UnigoGOObject{
+    go:string; 
+    ns: string;
+    name: string;  
 }
 
 export interface SelectionInterface {
