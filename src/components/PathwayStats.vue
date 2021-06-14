@@ -81,7 +81,7 @@ export default defineComponent({
                 taxid: props.taxid, 
                 pvalue: pvalue
             }
-
+            console.log("oraInput", apiInput); 
             fetch(`/api/pwas/ora`, {
                 method: 'POST',
                 body: JSON.stringify(apiInput),
@@ -90,10 +90,8 @@ export default defineComponent({
                 'Content-Type': 'application/json'
             }}).then(async (response) => {
                 const responseData = await response.json()
-                console.log(responseData); 
-                ORAResultsList.value = responseData.fusedNS.list
+                ORAResultsList.value = fuseResultsList(responseData)
                 resultsLoaded.value = true; 
-                console.log("TEST", ORAResultsList.value.filter(row => row.go === "GO:0019400"))
             }) 
         }
 
@@ -106,6 +104,16 @@ export default defineComponent({
 
         const clickRow = () => {
             emit('click-on-go', selectedRow.value.map(row => row.go))
+        }
+
+        const fuseResultsList = (data:any): any[] => {
+
+            let fused:any[] = []; 
+            Object.values(data).forEach((val:any) => {
+                fused = [...fused, ...val["list"]]
+            })
+            return fused; 
+
         }
 
         //watch(refresh, (newData) => {
