@@ -4,7 +4,7 @@
     <Listbox v-model="goSelection" :options="formattedToDisplay" :multiple="true" @change="clickSelection" listStyle="height:500px" :filter="true" :filterFields="filterFields">
         <template #header>
             <div class="font-bold p-2">
-                Selected GO ({{ formattedToDisplay.length }})
+                Selected GO ({{ go.length }})
             </div>
         </template>
         <template #option="slotProps">
@@ -27,7 +27,7 @@ import Listbox from 'primevue/listbox'
 interface GOSelectionInterface{
     id: string, 
     name: string, 
-    proteins: string[]
+    prots: string[]
 }
 
 export default defineComponent({
@@ -46,7 +46,7 @@ export default defineComponent({
 
     setup(props, {emit}){
         const goSelection: Ref<GOSelectionInterface[]> = ref([]); 
-        const { go } = toRefs(props)
+        const go = toRefs(props).go
         const filterFields = ["id", "name"]
 
         const formattedToDisplay = computed(() => {
@@ -54,7 +54,7 @@ export default defineComponent({
         })
 
         const clickSelection = () => {
-            emit("click-on-go", goSelection.value.map(go => go.proteins))
+            emit("click-on-go", goSelection.value.map(go => go.id)); 
         }
 
         return {clickSelection, goSelection, formattedToDisplay, filterFields}

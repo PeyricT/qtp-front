@@ -23,7 +23,7 @@ addEventListener("message", async event => {
     data.forEach((point: PointData) => {
         point.unigoGO.forEach((go) => {
             if(!(go.go in goData)) goData[go.go] = {go, proteins:[]}
-            goData[go.go].proteins.push(point.id)
+            goData[go.go].proteins.push(point.id); 
         })
     })
     const sortedData = sortAndFlat(goData); 
