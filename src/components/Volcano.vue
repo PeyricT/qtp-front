@@ -3,6 +3,9 @@
         <div v-if="!error" class="flex gap-10">
             <!-- plot part -->
             <div>
+                <div>
+                    <b>{{ allPoints.length }} proteins </b> have been found with annotation in local database.
+                </div>
                 <!-- transformy buttons -->
                 <div class="tab mt-2" v-if="volcanoDrawed">
                     <button class="tablinks" :class="{ active: transformy === 'none' }" @click="transformy = 'none'"> Raw </button>
@@ -38,7 +41,7 @@
                         <PathwayStats 
                             :class="goPartWidth.stats"
                             :selectedProts="filteredByPannelPoints.map(point => point.d.id)"
-                            :allProts="allPoints.map(point => point.d.id)"
+                            :allProts="withAnnotationPoints.map(point => point.d.id)"
                             :taxid="taxid"
                             @disable-go="disableGO"
                             :refresh="triggerStatsRefresh"
@@ -138,8 +141,13 @@ export default defineComponent({
                 d : point.d
             }))
             //store.commit("proteinSelection/initAllPoints", points)
-            return points
+
+            return points.filter(point => point.d !== undefined)
         });
+
+        const withAnnotationPoints: ComputedRef<Points[]> = computed(() => {
+            return allPoints.value.filter(point => point.d !== undefined)
+        })
 
         const statsComputed: Ref<boolean> = ref(false); 
         const goDisabled: Ref<boolean> = ref(false); 
@@ -212,7 +220,7 @@ export default defineComponent({
                     const layerCoords = layerUI.toggle(sliderUI, x, y)
                 })
             })
-            filteredByPannelPoints.value = allPoints.value
+            filteredByPannelPoints.value = withAnnotationPoints.value
             emit("prot-selection-change", filteredByPannelPoints.value)
 
             //console.log(allPoints.value)
@@ -228,7 +236,7 @@ export default defineComponent({
 
 
         const addFilterPoints = (predicateFn: (point:Points) => boolean) => {
-            const newPoints = filteredByPannelPoints.value.concat(allPoints.value.filter(point => predicateFn(point)))
+            const newPoints = filteredByPannelPoints.value.concat(withAnnotationPoints.value.filter(point => predicateFn(point)))
             filterPointsAction(newPoints); 
         }
 
@@ -274,7 +282,7 @@ export default defineComponent({
         }
 
         const filterPoints = (predicate:(point:Points)=>boolean) => {
-            return allPoints.value.filter(point => predicate(point))
+            return withAnnotationPoints.value.filter(point => predicate(point))
         }
 
         const highlightPoints = (svgPoints:any[]) => { //TO DO : type svg ? 
@@ -346,7 +354,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, triggerStatsRefresh, data, highlighFromProt, highlightFromGo }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, withAnnotationPoints, triggerStatsRefresh, data, highlighFromProt, highlightFromGo }
     }
 
 })

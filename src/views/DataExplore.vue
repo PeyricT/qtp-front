@@ -100,7 +100,6 @@ export default defineComponent({
     const draw = () => {
       if(canDraw.value) {
         volcanoDisabled.value = false; 
-        //console.log("lets draw");
         ////console.log(canDraw.value);
         const x_list = store.getters.getColDataByName(selected.value[0].name, 'number')
         const y_list = store.getters.getColDataByName(selected.value[1].name, 'number')
@@ -134,7 +133,6 @@ export default defineComponent({
       }))
       //nanProt.value = points.filter((point: t.Points) => isNaN(point.x)).map((point : t.Points) => point.d.id); 
       const newPlotData = {xLabel : xAxis, yLabel: yAxis, points : points.filter(point => !(isNaN(point.x)|| isNaN(point.y)))}
-      console.log("data", newPlotData); 
       plotsData.value.push(newPlotData); 
 
     }
@@ -154,7 +152,7 @@ export default defineComponent({
       return new Promise((resolve, reject) => {
         const setTaxid: Set<number> = new Set();
         uniprotData.forEach(prot => {
-          setTaxid.add(Number(prot.taxid))
+          if(prot !== undefined) setTaxid.add(Number(prot.taxid))
         }) 
 
         if (setTaxid.size === 1) resolve(setTaxid)

@@ -1,13 +1,14 @@
+import { csvParse } from "d3";
 import { resolveComponent } from "vue";
 import { UnigoGOObject, GOData } from '../types/volcano'
 
 interface UniprotDatum {
     name?: string;
-    GO?: GOData[];
+    go: GOData[];
     unigoGO : UnigoGOObject[]; 
     id: string;
-    geneName?: string;
-    fullName?: string;
+    gene_name?: string;
+    full_name?: string;
     taxid?: string; 
 }
 
@@ -40,28 +41,28 @@ class UniprotStorage {
         return uniprotData;        
     }
 
-    private fetchFromUnigo = async( uniprotIDs: string[], taxid:number) => {
-        const response = await fetch(`${this.providerURL ? this.providerURL : ''}/api/unigo/trimmedVectorByProt`,{
-            method: 'POST',
-            headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({'uniprotIds' : uniprotIDs, "taxid": taxid})
+    // private fetchFromUnigo = async( uniprotIDs: string[], taxid:number) => {
+    //     const response = await fetch(`${this.providerURL ? this.providerURL : ''}/api/unigo/trimmedVectorByProt`,{
+    //         method: 'POST',
+    //         headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({'uniprotIds' : uniprotIDs, "taxid": taxid})
 
-        })
-        const unigoData: UnigoFetch = await response.json(); 
-        if (!unigoData)
-            throw("No unigo data loaded");
+    //     })
+    //     const unigoData: UnigoFetch = await response.json(); 
+    //     if (!unigoData)
+    //         throw("No unigo data loaded");
         
-        return unigoData
-    }
+    //     return unigoData
+    // }
 
     private checkTaxids = async(uniprotData: UniprotFetch): Promise<Set<number>> => {
         return new Promise((resolve, reject) => {
             const setTaxid: Set<number> = new Set();
             Object.values(uniprotData).forEach(prot => {
-                setTaxid.add(Number(prot.taxid))
+                if(prot !== null)  setTaxid.add(Number(prot.taxid))
             })
             if (setTaxid.size === 1) resolve(setTaxid)
             else reject(setTaxid)
@@ -70,16 +71,41 @@ class UniprotStorage {
 
     public add = async (uniprotIDs : string[]): Promise<boolean> => {
         const uniprotData = await this.fetchFromUniprot(uniprotIDs); 
+        const withAnnotationData : UnigoFetch = {}
         return new Promise((res,rej) => {
             this.checkTaxids(uniprotData).then(taxid => {
                 const finalTaxid = taxid.values().next().value
-                this.fetchFromUnigo(uniprotIDs, finalTaxid).then(unigoData => {
-                   Object.entries(unigoData).forEach(([prot, goObj]) => {
-                        uniprotData[prot].unigoGO = goObj; 
+                try {
+                    //This is dumb but I'm lazy for now
+                    Object.values(uniprotData).forEach(prot => {
+                       
+                        if(prot !== null) {
+                            //@ts-ignore
+                            withAnnotationData[prot.id] = prot
+                            prot.unigoGO = []
+                            prot.go.forEach(goObj => {
+                                const test : UnigoGOObject = {ns : getNamespace(goObj.term), go : goObj.id, name : goObj.term}
+                                prot.unigoGO.push(test); 
+                            })
+                            
+                        }
                    })
-                   this.data = {  ...this.data, ...uniprotData }
-                   res(true); 
-                }).catch(err => rej({"fetch unigo error": err}))
+                    //@ts-ignore
+                    this.data = withAnnotationData
+                    console.log("DATA", this.data)
+                } catch(e) {
+                    rej(e)
+                }
+                
+                
+                res(true)
+                // this.fetchFromUnigo(uniprotIDs, finalTaxid).then(unigoData => {
+                //    Object.entries(unigoData).forEach(([prot, goObj]) => {
+                //         uniprotData[prot].unigoGO = goObj; 
+                //    })
+                //    this.data = {  ...this.data, ...uniprotData }
+                //    res(true); 
+                // }).catch(err => rej({"fetch unigo error": err}))
             }).catch(taxids_err => rej({"taxid error": taxids_err}))
         })
     }
@@ -108,6 +134,16 @@ class UniprotStorage {
 
 
 let UNIPROT_DB:UniprotStorage|undefined = undefined
+
+const getNamespace = (goName : string) => {
+    const firstLetter = goName.split(':')[0] 
+    switch(firstLetter){
+        case 'F': return "Molecular function" 
+        case 'P' : return "Biological process"
+        case 'C' : return "Cellular component"
+        default : return "Unknown namespace"
+    }
+}
 
 export const logDB = ():UniprotStorage => {
     if(!UNIPROT_DB) {

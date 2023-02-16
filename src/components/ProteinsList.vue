@@ -47,7 +47,7 @@ export default defineComponent({
     const { points } = toRefs(props);
 
     const formattedToDisplay = computed(() => {
-      return points.value.map(point => ({id : point.d.id, fullName: point.d.fullName}) )
+      return points.value.map(point => ({id : point.d.id, fullName: point.d.full_name}) )
     })
 
     const filterFields = ["id", "fullName"]
@@ -65,7 +65,7 @@ export default defineComponent({
       points.value.forEach((point) => {
         report_str =
           report_str +
-          `${point.d.id}\t${point.d.fullName}\t${point.d.geneName}\t${point.d.name}\n`;
+          `${point.d.id}\t${point.d.full_name}\t${point.d.gene_name}\t${point.d.name}\n`;
       });
       download(report_str, `selected_proteins.tsv`, "text/plain");
     };

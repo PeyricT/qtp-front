@@ -19,11 +19,11 @@ interface GOData{
 }
 
 interface PointData{
-    fullName: string; 
-    geneName: string;
+    full_name: string; 
+    gene_name: string;
     id: string;
     name: string; 
-    GO: GOData[]; 
+    go: GOData[]; 
     taxid: number; 
     unigoGO: UnigoGOObject[]; 
 
