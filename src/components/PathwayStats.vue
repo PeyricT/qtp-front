@@ -107,10 +107,11 @@ export default defineComponent({
         }
 
         const fuseResultsList = (data:any): any[] => {
-
             let fused:any[] = []; 
-            Object.values(data).forEach((val:any) => {
-                fused = [...fused, ...val["list"]]
+            Object.entries(data).forEach((val:any) => {
+                const ns = val[0]
+                const listForNs = val[1].map((goObj : any) => ({go: goObj.ID, ns, name: goObj.name, pvalue: goObj.pvalue_annot}))
+                fused = [...fused, ...listForNs]
             })
             return fused; 
 

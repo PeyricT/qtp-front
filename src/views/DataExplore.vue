@@ -96,6 +96,8 @@ export default defineComponent({
     const selectedProts : Ref<string[]> = ref([]); 
 
     const nanProt: Ref<String[]> = ref([])
+
+    const currentProteome : Ref<string> = ref('')
     
     const draw = () => {
       if(canDraw.value) {
@@ -172,7 +174,6 @@ export default defineComponent({
         console.log("DataExplore onMounted")
         // the DOM element will be assigned to the ref after initial render
         ////console.log(svgRoot.value) // <div>This is a root element</div>
-
         getProtData()
           .then((values) => {
             console.log("prot data loaded")
@@ -197,7 +198,7 @@ export default defineComponent({
         
     });
 
-    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts, nanProt, drawNewPlot, plotsData} ;
+    return {canDraw, draw, availableData, selectable, selected, select, plotData, transformation, uniprotLoaded, uniprotError, volcanoDisabled, volcanoDrawed, taxidWarning, taxid, saveSelectedProtId, selectedProts, nanProt, drawNewPlot, plotsData, currentProteome} ;
   }
 
 

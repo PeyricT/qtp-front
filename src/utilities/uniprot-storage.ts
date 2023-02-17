@@ -16,10 +16,12 @@ type UniprotFetch = { [index: string]: UniprotDatum };
 type UnigoFetch = { [index: string]: UnigoGOObject[]}
 class UniprotStorage {
     data: UniprotFetch;
+    proteome: string; 
     providerURL: string|undefined
 
     constructor(url?: string){
         this.data = {}
+        this.proteome = ''
         this.providerURL = url
     }
 
@@ -119,6 +121,17 @@ class UniprotStorage {
             catch(err){
                 rej(err)
 
+            }
+        })
+    }
+
+    public registerProteome = async(name : string) : Promise<boolean> => {
+        return new Promise((res,rej) => { 
+            try {
+                this.proteome = name
+            }
+            catch(e){
+                rej(e)
             }
         })
     }

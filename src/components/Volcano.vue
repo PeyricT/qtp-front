@@ -42,7 +42,7 @@
                             :class="goPartWidth.stats"
                             :selectedProts="filteredByPannelPoints.map(point => point.d.id)"
                             :allProts="withAnnotationPoints.map(point => point.d.id)"
-                            :taxid="taxid"
+                            :taxid="proteome"
                             @disable-go="disableGO"
                             :refresh="triggerStatsRefresh"
                             @click-on-go="highlightFromGo"/>
@@ -79,6 +79,9 @@ import ProteinsList from '@/components/ProteinsList.vue'
 import GoList from '@/components/GoList.vue'
 import PathwayStats from '@/components/PathwayStats.vue'
 import Button from 'primevue/button'
+import { logDB } from '@/utilities/uniprot-storage';
+
+const UniprotDatabase = logDB(); 
 
 export default defineComponent({
     components : { Error, ProteinsList, GoList, Loader, PathwayStats, Button }, 
@@ -107,10 +110,6 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        taxid : {
-            type: Number as PropType<number>,
-            default: 0
-        }, 
         plotNumber : {
             type : Number as PropType<number>, 
             default : 0
@@ -131,6 +130,11 @@ export default defineComponent({
         const goSelected : Ref<GOObject[]> = ref([])
         const goLoaded = ref(false); 
         const store = useStore();
+
+        const proteome = computed(() => {
+            console.log("proteome get in volcano", UniprotDatabase.proteome)
+            return UniprotDatabase.proteome
+        })
 
         const allPoints: ComputedRef<Points[]> = computed(() => {
             const points = props.data.points.map(point => ({
@@ -354,7 +358,7 @@ export default defineComponent({
             protToGoWorker.terminate(); 
         })
 
-        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, withAnnotationPoints, triggerStatsRefresh, data, highlighFromProt, highlightFromGo }
+        return { error, svgRoot, volcanoDrawed, transformy, filteredByPannelPoints, goSelected, goLoaded, statsComputed, goDisabled, goPartWidth, disableGO, allPoints, withAnnotationPoints, triggerStatsRefresh, data, highlighFromProt, highlightFromGo, proteome }
     }
 
 })

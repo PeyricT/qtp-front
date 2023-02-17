@@ -14,13 +14,22 @@
     </div>
 
     <div v-if="loaded && uniprotDBFilled">
+
         Select proteome
-        <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select a reference proteome" /> 
+        
+        <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select your reference proteome">
+        </Dropdown>
+
+        <span v-if="selectedProteome.name">
+        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span>
+
     </div>
 
+    <Button v-if="selectedProteome.name" label="Load data into table" @click="clickLoadButton"/>  
+    
    <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
    <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
-    <div v-if="loaded && uniprotDBFilled && !xlsDropped && isProteomeSelected" class="mt-5">
+    <div v-if="loaded && uniprotDBFilled && !xlsDropped && canShowTable" class="mt-5">
         
         <div class="border border-primary p-3">
             <div
@@ -96,14 +105,14 @@ export default defineComponent({
         const loaded = ref(false);
         const xlsDropped = ref(false);
         const uniprotDBFilled = ref(false);
-        const isProteomeSelected = ref(false)
+        const canShowTable = ref(false)
 
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
         const selectedColumns: Ref<ColTemplate[]> = ref([]); 
 
         const proteomes: Ref<Proteome[]> = ref([])
-        //const selectedProteome = reactive({}); 
+        const selectedProteome : Ref<Proteome> = ref({'name': '', 'protein_number': 0})
 
         const filters = ref(
             {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
@@ -221,7 +230,13 @@ export default defineComponent({
             return response.json()
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, isProteomeSelected, proteomes, selectedProteome };
+        const clickLoadButton = async() => {
+            canShowTable.value = true
+            UniprotDatabase.registerProteome(selectedProteome.value.name)
+            console.log(UniprotDatabase.proteome); 
+        }
+
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton };
     }
 });
 </script>
