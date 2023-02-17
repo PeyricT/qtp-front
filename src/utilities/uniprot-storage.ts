@@ -123,6 +123,14 @@ class UniprotStorage {
         })
     }
 
+    public length = async(): Promise<number> => {
+        return Object.keys(this.data).length
+    }
+
+    public getAll = async(): Promise<string[]> => {
+        return Object.keys(this.data)
+    }
+
     /*public getGO = async(filterFn:(go: GOObject2) => Boolean): Promise<any> => {
         console.log("getGO"); 
         console.log(this.unigo_data); 

@@ -12,9 +12,15 @@
         <!--<InputFile/>-->
         <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/>
     </div>
+
+    <div v-if="loaded && uniprotDBFilled">
+        Select proteome
+        <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select a reference proteome" /> 
+    </div>
+
    <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
    <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
-    <div v-if="loaded && uniprotDBFilled && !xlsDropped" class="mt-5">
+    <div v-if="loaded && uniprotDBFilled && !xlsDropped && isProteomeSelected" class="mt-5">
         
         <div class="border border-primary p-3">
             <div
@@ -61,6 +67,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import MultiSelect from 'primevue/multiselect'; 
 import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
 import {FilterMatchMode} from 'primevue/api';
 import XLSX  from 'xlsx';
 import { useStore } from 'vuex'
@@ -75,8 +82,13 @@ interface ColTemplate{
     idx: number; 
 }
 
+interface Proteome{
+    name: string; 
+    protein_number: number; 
+}
+
 export default defineComponent({
-    components : { DragAndDrop, Loader, InputFile, Button, DataTable, Column, MultiSelect, InputText },
+    components : { DragAndDrop, Loader, InputFile, Button, DataTable, Column, MultiSelect, InputText, Dropdown },
     setup(_, { emit }){
         
         const store = useStore()
@@ -84,10 +96,14 @@ export default defineComponent({
         const loaded = ref(false);
         const xlsDropped = ref(false);
         const uniprotDBFilled = ref(false);
+        const isProteomeSelected = ref(false)
 
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
         const selectedColumns: Ref<ColTemplate[]> = ref([]); 
+
+        const proteomes: Ref<Proteome[]> = ref([])
+        //const selectedProteome = reactive({}); 
 
         const filters = ref(
             {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
@@ -108,6 +124,18 @@ export default defineComponent({
             loaded.value = false; 
  
             await storeData(dropData); 
+
+            const storedIds = await UniprotDatabase.getAll(); 
+
+            console.log("new request for proteome ?", storedIds)
+
+            const proteomesRes = await getProteome(storedIds); 
+
+            proteomes.value = Object.entries(proteomesRes).map(([proteomeName, proteinNumber]) => {
+                return {name : proteomeName, protein_number: proteinNumber}
+            })
+    
+
         };
 
 
@@ -180,7 +208,20 @@ export default defineComponent({
                 store.commit('states/mutateXlsDisplayed', true)
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters };
+        const getProteome = async(uniprotIDs: string[]) : Promise<{[proteome_name : string]: number}> => {
+            const response = await fetch(`/api/uniprot/proteome_scan`, {
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({'uniprotIDs' : uniprotIDs})
+            });
+
+            return response.json()
+        }
+
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, isProteomeSelected, proteomes, selectedProteome };
     }
 });
 </script>
