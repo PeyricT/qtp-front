@@ -25,11 +25,11 @@
 
     </div>
 
-    <Button v-if="selectedProteome.name" label="Load data into table" @click="clickLoadButton"/>  
+    <Button v-if="selectedProteome.name" label="Metadata" @click="clickLoadButton"/>  
     
    <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
    <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
-    <div v-if="loaded && uniprotDBFilled && !xlsDropped" class="mt-5">
+    <div v-if="loaded && uniprotDBFilled && !xlsDropped && canShowTable" class="mt-5">
         
         <div class="border border-primary p-3">
             <div
@@ -89,7 +89,7 @@ export default defineComponent({
         const loaded = ref(false);
         const xlsDropped = ref(false);
         const uniprotDBFilled = ref(false);
-        //const canShowTable = ref(false)
+        const canShowTable = ref(false)
 
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
@@ -215,12 +215,12 @@ export default defineComponent({
         }
 
         const clickLoadButton = async() => {
-            //canShowTable.value = true
+            canShowTable.value = true
             UniprotDatabase.registerProteome(selectedProteome.value.name)
             console.log(UniprotDatabase.proteome); 
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, proteomes, selectedProteome, clickLoadButton };
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, proteomes, selectedProteome, clickLoadButton,canShowTable };
     }
 });
 </script>

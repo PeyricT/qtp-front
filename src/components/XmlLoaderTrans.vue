@@ -25,7 +25,7 @@
 
     </div>
 
-    <Button v-if="selectedProteome.name" label="Load data into table" @click="clickLoadButton"/>  
+    <Button v-if="selectedProteome.name" label="Metadata" @click="clickLoadButton"/>  
     
    <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
    <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
@@ -126,6 +126,7 @@ export default defineComponent({
             return  store.getters.sheetNames;
         });
 
+        //permet de load le fichier
         const loadDroppedFile = async (dropData: any) => {
             store.commit('states/mutateXlsDisplayed', false)
             xlsDropped.value = true;
@@ -185,6 +186,7 @@ export default defineComponent({
             store.commit('mutateSelectedCols', val.map(col => col.idx))
         }
 
+        //permet de lire le fichier 
         const storeData = async (data: any) => {
             const wb = XLSX.read(data, {type:"array"});
                 store.dispatch('initStoreBook', wb);
@@ -194,9 +196,9 @@ export default defineComponent({
 
                 await storeInUniprotDatabase(); 
                 uniprotDBFilled.value = true; 
-
                 const headers = store.getters.currentSheetHeaders
                 const col: ColTemplate[] = headers.map((header:string, index:number) => {return {field: header.replace(/\./g, ''), header: header, idx: index}})
+                console.log("titre", store.getters.sTitle)
                 columns.value = col
                 const _ = store.getters.json
                 const _jsonData = [] as any
@@ -236,7 +238,7 @@ export default defineComponent({
             console.log(UniprotDatabase.proteome); 
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton };
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton};
     }
 });
 </script>

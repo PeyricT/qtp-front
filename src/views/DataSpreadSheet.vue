@@ -1,15 +1,13 @@
 <template>
-  <div class="root">
-   <p class="text-xl font-medium m-2"> Load your proteomics data </p>
-   <XmlLoader />
-   <!--
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-   -->
-  </div>
-  <div id="transcripto">
-    <p class="text-xl font-medium m-2"> Load your transcriptomics data </p>
-    <XmlLoaderTrans />
+  <div class="bite" style="display:flex; flex-direction: row; justify-content: space-between; ">
+      <div id="proteo">
+        <p class="text-xl font-medium m-2"> Load your proteomics data </p>
+        <XmlLoader />
+      </div>
+      <div id="transcripto">
+        <p class="text-xl font-medium m-2"> Load your transcriptomics data </p>
+        <XmlLoaderTrans />
+      </div>
   </div>
 </template>
 
@@ -32,14 +30,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.root{
+#proteo{
   /*text-align:center; */ 
-  float:left;
   width:50%;
+  color: green;
 }
-.transcripto{
+#transcripto{
   /*text-align:center; */ 
-  float:right;
   width:50%;
 }
 </style>

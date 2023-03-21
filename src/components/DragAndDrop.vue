@@ -10,7 +10,7 @@
     @dragleave="dragged=false"
     :class="{ 'dragged': dragged }">
         <p>
-            Drag and drop experience file to here to upload.
+            Drag and drop experience file to here to upload
         </p>
     </div>
 </template>
