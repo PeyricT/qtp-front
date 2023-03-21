@@ -7,8 +7,8 @@
     <TabPanel header="Volcano plots" :disabled="!xlsDisplayed">
       <DataExplore v-if="xlsDisplayed"/>
     </TabPanel>
-    <TabPanel header="Enrichment results" :disabled="!xlsDisplayed">
-      <DataExplore v-if="xlsDisplayed"/>
+    <TabPanel header="Enrichment results">
+      <DataTest/>
     </TabPanel>
   </TabView>
 </template>
