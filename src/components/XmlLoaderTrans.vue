@@ -12,7 +12,7 @@
         <!--<InputFile/>-->
         <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/>
     </div>
-    
+
     <div v-if="loaded && uniprotDBFilled">
 
         Select proteome
@@ -29,7 +29,7 @@
     
    <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
    <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
-    <div v-if="loaded && uniprotDBFilled && !xlsDropped" class="mt-5">
+    <div v-if="loaded && uniprotDBFilled && !xlsDropped && canShowTable" class="mt-5">
         
         <div class="border border-primary p-3">
             <div
@@ -44,6 +44,22 @@
                 {{selectedColumns.length}} selected columns
             </p>
             </div>
+
+    <!--Affichage du tableau d entree<DataTable :value="jsonData" :paginator="true" :rows="10" :resizableColumns="true" columnResizeMode="expand" showGridlines responsiveLayout="scroll" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10,20,50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+    v-model:filters="filters"
+    >
+        <template #header>
+            <div class="p-d-flex p-jc-between p-ai-center">
+                <MultiSelect :modelValue="selectedColumns" :options="columns" optionLabel="header" @update:modelValue="onSelection"
+                placeholder="Select Columns" :filter="true" class="w-1/2"/>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search" />
+                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                </span>
+            </div>
+        </template>
+        <Column v-for="(col, index) of selectedColumns" :field="col.field" :header="col.header" :key="col.field + '_' + index"></Column>
+    </DataTable> -->
 </div>
 </template>
 
@@ -56,7 +72,7 @@ import Loader from '@/components/global/Loader.vue'
 import InputFile from '@/components/InputFile.vue'
 //import FileUpload from 'primevue/fileupload';
 import Button from 'primevue/button'; 
-//import DataTable from 'primevue/datatable';
+import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import MultiSelect from 'primevue/multiselect'; 
 import InputText from 'primevue/inputtext';
@@ -81,7 +97,7 @@ interface Proteome{
 }
 
 export default defineComponent({
-    components : { DragAndDrop, Loader, InputFile, Button, Column, MultiSelect, InputText, Dropdown },
+    components : { DragAndDrop, Loader, InputFile, Button, DataTable, Column, MultiSelect, InputText, Dropdown },
     setup(_, { emit }){
         
         const store = useStore()
@@ -89,7 +105,7 @@ export default defineComponent({
         const loaded = ref(false);
         const xlsDropped = ref(false);
         const uniprotDBFilled = ref(false);
-        //const canShowTable = ref(false)
+        const canShowTable = ref(false)
 
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
@@ -127,7 +143,10 @@ export default defineComponent({
             proteomes.value = Object.entries(proteomesRes).map(([proteomeName, proteinNumber]) => {
                 return {name : proteomeName, protein_number: proteinNumber}
             })
+    
+
         };
+
 
         const loadExample = async () => {
             store.commit('states/mutateXlsDisplayed', false)
@@ -152,15 +171,13 @@ export default defineComponent({
             return new Promise((res, rej) => {
                 const uniprotIdList: string[]|undefined = store.getters.getColDataByName("Accession", "string");
                 if (uniprotIdList){
-                    console.log("dans le if ")
                     UniprotDatabase.add(uniprotIdList)
                         .then(() => res(true))
                         .catch(err => rej(err))
-                    
                 }
                 else rej(Error("Can't fill up uniprot database. No uniprot ids"))
             })
-        } 
+        }
 
         const onSelection = (val: ColTemplate[]) => {
             console.log("add", val)
@@ -177,7 +194,6 @@ export default defineComponent({
 
                 await storeInUniprotDatabase(); 
                 uniprotDBFilled.value = true; 
-                console.log("apres le true de la variable")
 
                 const headers = store.getters.currentSheetHeaders
                 const col: ColTemplate[] = headers.map((header:string, index:number) => {return {field: header.replace(/\./g, ''), header: header, idx: index}})
@@ -215,18 +231,22 @@ export default defineComponent({
         }
 
         const clickLoadButton = async() => {
-            //canShowTable.value = true
+            canShowTable.value = true
             UniprotDatabase.registerProteome(selectedProteome.value.name)
             console.log(UniprotDatabase.proteome); 
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, proteomes, selectedProteome, clickLoadButton };
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton };
     }
 });
 </script>
 
 <style scoped>
 
+table, th, td{
+    border:1px solid black; 
+    background-clip: padding-box;
+}
 
 .col-clickable-div{
     height:100%; 

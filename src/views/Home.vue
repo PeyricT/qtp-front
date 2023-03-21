@@ -1,10 +1,13 @@
 <template>
   <h1 class="text-center m-4 text-5xl font-semibold"> QTP </h1>
   <TabView>
-    <TabPanel header="Data"> 
+    <TabPanel header="Overview"> 
       <DataSpreadSheet/>
     </TabPanel>
-    <TabPanel header="Explore" :disabled="!xlsDisplayed">
+    <TabPanel header="Volcano plots" :disabled="!xlsDisplayed">
+      <DataExplore v-if="xlsDisplayed"/>
+    </TabPanel>
+    <TabPanel header="Enrichment results" :disabled="!xlsDisplayed">
       <DataExplore v-if="xlsDisplayed"/>
     </TabPanel>
   </TabView>

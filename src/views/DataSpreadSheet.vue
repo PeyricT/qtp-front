@@ -1,11 +1,15 @@
 <template>
   <div class="root">
-   <p class="text-xl font-medium m-2"> Load your data </p>
+   <p class="text-xl font-medium m-2"> Load your proteomics data </p>
    <XmlLoader />
    <!--
     <img alt="Vue logo" src="../assets/logo.png">
     <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
    -->
+  </div>
+  <div id="transcripto">
+    <p class="text-xl font-medium m-2"> Load your transcriptomics data </p>
+    <XmlLoaderTrans />
   </div>
 </template>
 
@@ -13,10 +17,12 @@
 import { defineComponent } from 'vue';
 //import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
 import XmlLoader from '@/components/XmlLoader.vue'; // @ is an alias to /src
+import XmlLoaderTrans from '@/components/XmlLoaderTrans.vue';
 export default defineComponent({
   name: 'DataSpreadSheet',
   components: {
-    XmlLoader
+    XmlLoader,
+    XmlLoaderTrans
   //  HelloWorld,
   },
   mounted(){
@@ -27,6 +33,13 @@ export default defineComponent({
 
 <style scoped>
 .root{
-  text-align:center; 
+  /*text-align:center; */ 
+  float:left;
+  width:50%;
+}
+.transcripto{
+  /*text-align:center; */ 
+  float:right;
+  width:50%;
 }
 </style>
