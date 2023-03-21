@@ -18,11 +18,12 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import DataSpreadSheet from '@/views/DataSpreadSheet.vue'
 import DataExplore from '@/views/DataExplore.vue'
+import DataTest from '@/views/DataTest.vue'
 import { defineComponent } from '@vue/runtime-core';
 import { useStore } from 'vuex'
 import { computed } from 'vue'
 export default defineComponent({
-  components : { TabView, TabPanel, DataSpreadSheet, DataExplore},
+  components : { TabView, TabPanel, DataSpreadSheet, DataExplore, DataTest},
   setup(){
     const store = useStore()
     const xlsDisplayed = computed(() => store.state.states.xlsDisplayed)

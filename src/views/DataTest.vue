@@ -1,6 +1,5 @@
 <template>
-  <div class="root">
-   <p class="text-xl font-medium m-2"> TEST </p>
+POUET
    <Button>
         Test1
     </Button>
@@ -14,3 +13,6 @@
         Test4
     </Button>
 </template>
+
+<script lang="ts">
+import Button from 'primevue/button'
