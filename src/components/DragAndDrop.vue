@@ -31,23 +31,19 @@ export default defineComponent({
                 return;
             }           
             const file = d.files[0] as File;
+                console.log("name du fichier :",file.name)
+                emit('file-name', file.name);
             const onLoad = (e: ProgressEvent<FileReader>) => {
                 dropData.value = e?.target?.result as ArrayBuffer;
-                //console.log("Fire XLS");
                 console.log("emit xmlLoad")
                 emit('xml-load', dropData.value);
-                /*const d = e?.target?.result;
-                if(d) {
-                    //console.log("data In");
-                    //console.log(d);
-                    const data = new Uint8Array(d as ArrayBuffer);
-                    emit('xml-load',data);
-                }*/
+
             };
                
             const reader = new FileReader();
             reader.onload = onLoad;
             reader.readAsArrayBuffer(file);
+            //return file
         }
 
         const handleDrop = (e: DragEvent) => {
