@@ -14,7 +14,7 @@ interface UniprotDatum {
 
 type UniprotFetch = { [index: string]: UniprotDatum }; 
 type UnigoFetch = { [index: string]: UnigoGOObject[]}
-class UniprotStorage {
+export class UniprotStorage {
     data: UniprotFetch;
     proteome: string; 
     providerURL: string|undefined

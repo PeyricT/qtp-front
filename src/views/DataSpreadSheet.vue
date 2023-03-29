@@ -19,12 +19,10 @@ import XmlLoaderTrans from '@/components/XmlLoaderTrans.vue';
 export default defineComponent({
   name: 'DataSpreadSheet',
   components: {
-    XmlLoader,
-    XmlLoaderTrans
-  //  HelloWorld,
+    XmlLoader, //pour la partie proteo
+    XmlLoaderTrans  //pour la partie transcripto
   },
   mounted(){
-    //console.log("Mounting spreadsheet");
   }
 });
 </script>

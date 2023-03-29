@@ -20,8 +20,8 @@
         <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select your reference proteome">
         </Dropdown>
 
-        <span v-if="selectedProteome.name">
-        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span>
+        <p><span v-if="selectedProteome.name">
+            {{selectedProteome.name}} databse contains {{selectedProteome.protein_number}} of your proteins </span></p>
 
     </div>
 
@@ -132,9 +132,8 @@ export default defineComponent({
             xlsDropped.value = true;
             uniprotDBFilled.value = false; 
             loaded.value = false; 
- 
             await storeData(dropData); 
-
+            
             const storedIds = await UniprotDatabase.getAll(); 
 
             console.log("new request for proteome ?", storedIds)

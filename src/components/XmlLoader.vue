@@ -1,6 +1,8 @@
 /*
  See tricks : https://learnvue.co/2020/01/how-to-add-drag-and-drop-to-your-vuejs-project/
 */
+<!-- PARTIE PROTEO-->
+
 <template>
 
    <div class="flex">
@@ -8,9 +10,12 @@
         <DragAndDrop class="p-3 w-9/10"
         @xml-load="loadDroppedFile"
         @xls-drop="xlsDropped=true"
+        @file-name="loadFileName"
         />
         <!--<InputFile/>-->
-        <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/>
+        <!-- <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/> -->
+        <p><input type="file" ref="file" @change="readFile($event)" /></p>
+
     </div>
     
     <div v-if="loaded && uniprotDBFilled">
@@ -20,8 +25,8 @@
         <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select your reference proteome">
         </Dropdown>
 
-        <span v-if="selectedProteome.name">
-        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span>
+        <p><span v-if="selectedProteome.name">
+        {{selectedProteome.name}} databse contains {{selectedProteome.protein_number}} of your proteins </span></p>
 
     </div>
 
@@ -33,11 +38,9 @@
         
         <div class="border border-primary p-3">
             <div
-                class="font-semibold mb-2"
-                v-for="sTitle in headers"
-                :key="sTitle"
-            >
-                {{sTitle}}
+                class="font-semibold mb-2">
+
+                {{FN}}
             </div>
             <p> {{jsonData.length}} proteins</p>
             <p>
@@ -67,7 +70,11 @@ import { useStore } from 'vuex'
 
 import { logDB } from '../utilities/uniprot-storage';
 const UniprotDatabase = logDB(); 
+import { UniprotStorage } from '../utilities/uniprot-storage';
 import { range } from '../utilities/basic_functions'
+import { async } from 'q';
+import { file } from '@babel/types';
+import { index } from 'd3-array';
 
 interface ColTemplate{
     field: string; 
@@ -89,7 +96,7 @@ export default defineComponent({
         const loaded = ref(false);
         const xlsDropped = ref(false);
         const uniprotDBFilled = ref(false);
-        const canShowTable = ref(false)
+        const canShowTable = ref(false);
 
         const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
         const jsonData = ref([]) // TO DO : typing
@@ -100,13 +107,14 @@ export default defineComponent({
 
         const filters = ref(
             {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
-        ); 
+        )
+        let FN = ref(); 
 
- 
+        let uniprotStorages: {[index: string]:any} = {};
 
         //const active = computed(() => store.state.count);
         const headers = computed( () => {
-            ////console.log("HEADERS", store.getters.sheetNames); 
+            //console.log("HEADERS", store.getters.sheetNames); 
             return  store.getters.sheetNames;
         });
 
@@ -129,35 +137,70 @@ export default defineComponent({
             })
         };
 
-        const loadExample = async () => {
+        const loadFileName = (file_name: any) => {
+            //console.log("fn",file_name)
+            FN.value=file_name
+        }
+
+        const readFile = async (e: Event ) => {
+
+            const DataFile = ref(new ArrayBuffer(0))
+
+            console.log("toto");
+            // To avoid events withtout files
+             if (!(e.target instanceof HTMLInputElement && e.target?.files)) {
+                 return;
+            }
+
             store.commit('states/mutateXlsDisplayed', false)
             xlsDropped.value = true;
             uniprotDBFilled.value = false; 
-            loaded.value = false; 
-            const arrayData =  await fetch('xls/TMT-donées brutes_Results_20-0609-0618_VegetativeExp_V2_proteins_test.ods')
-                .then( (response) => {
-                    return response.arrayBuffer(); 
-                })
-                .catch(() => console.error("No XLS found"))
+            loaded.value = false;
 
-            if (arrayData){
-                const data = new Uint8Array(arrayData);
-                await storeData(data); 
-                
-            }
+            let xlsxFile = e.target?.files[0];
+
+            console.log(xlsxFile)
+            console.log("Ajout de UniprotStorage dans bdd")
+
+            /////////////
+            const onLoad = (e: ProgressEvent<FileReader>) => {
+                DataFile.value = e?.target?.result as ArrayBuffer;
+                console.log("value en arraybuffer")
+            };
+               
+            const reader = new FileReader();
+            reader.onload = onLoad;
+            reader.readAsArrayBuffer(xlsxFile);
+            //return file
+            /////////////
+
+            uniprotStorages[xlsxFile.name] = new UniprotStorage() 
+            console.log(uniprotStorages)
+            //eturn
+            await storeData(DataFile.value)
+            
+            const storedIds = await uniprotStorages[xlsxFile.name].getAll();
+            console.log("new request for proteome ?", storedIds)
+
+            const proteomesRes = await getProteome(storedIds);
+            proteomes.value = Object.entries(proteomesRes).map(([proteomeName, proteinNumber]) => {
+                return {name : proteomeName, protein_number: proteinNumber}
+            })
         }
 
-        const storeInUniprotDatabase = (): Promise<boolean> => {
+        const storeInUniprotDatabase = (uniprotStorage: { add: (arg0: string[]) => Promise<any>; }): Promise<boolean> => {
             console.log("storeInUniprotDatabase")
             return new Promise((res, rej) => {
                 const uniprotIdList: string[]|undefined = store.getters.getColDataByName("Accession", "string");
-                if (uniprotIdList){
-                    console.log("dans le if ")
+                console.log("database proteo:", store.getters.getColDataByName("Accession", "string"))
+                console.log(uniprotIdList)
+                if (uniprotIdList){ 
                     UniprotDatabase.add(uniprotIdList)
-                        .then(() => res(true))
-                        .catch(err => rej(err))
-                    
+                    .then(() => res(true))
+                    .catch((err: any) => rej(err))
+                    console.log("add de uniprotList dans uniprotstorage", UniprotDatabase)
                 }
+                
                 else rej(Error("Can't fill up uniprot database. No uniprot ids"))
             })
         } 
@@ -169,15 +212,15 @@ export default defineComponent({
         }
 
         const storeData = async (data: any) => {
+            console.log("kéblo")
             const wb = XLSX.read(data, {type:"array"});
+                console.log("enregistrement du fichier", wb)
                 store.dispatch('initStoreBook', wb);
-                //store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
                 xlsDropped.value = false; 
                 loaded.value = true;
 
-                await storeInUniprotDatabase(); 
+                await storeInUniprotDatabase(uniprotStorages[data.name]); 
                 uniprotDBFilled.value = true; 
-                console.log("apres le true de la variable")
 
                 const headers = store.getters.currentSheetHeaders
                 const col: ColTemplate[] = headers.map((header:string, index:number) => {return {field: header.replace(/\./g, ''), header: header, idx: index}})
@@ -217,10 +260,11 @@ export default defineComponent({
         const clickLoadButton = async() => {
             canShowTable.value = true
             UniprotDatabase.registerProteome(selectedProteome.value.name)
+            //console.log ("db: ", UniprotDatabase)
             console.log(UniprotDatabase.proteome); 
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, proteomes, selectedProteome, clickLoadButton,canShowTable };
+        return { loadDroppedFile, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, proteomes, selectedProteome, clickLoadButton,canShowTable, loadFileName, FN, readFile};
     }
 });
 </script>
@@ -307,6 +351,7 @@ export default defineComponent({
 .test{
     width:100%; 
 }
+
 
 
 </style>
