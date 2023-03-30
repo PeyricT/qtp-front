@@ -4,7 +4,8 @@
     <TabPanel header="Overview"> 
       <DataSpreadSheet/>
     </TabPanel>
-    <TabPanel header="Volcano plots">
+    <TabPanel header="Volcano plots" :disabled="!xlsDisplayed">
+      <DataExplore v-if="xlsDisplayed"/>
       <DataExplore/>
     </TabPanel>
     <TabPanel header="Enrichment results">

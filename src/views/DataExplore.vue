@@ -3,31 +3,24 @@
 
   <div id="proteo">
     <p class="text-5xl font-medium m-2">Proteomics data</p>
-  <!--<Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>-->
-  <!--<<Error v-if="uniprotError" message="Can't retrieve uniprot data"/>-->
-  <!--<<Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>-->
-    <!--<<AddPlot :data="availableData" @new-plot="drawNewPlot"/>
-      <div v-for="(plotData, key) in plotsData" :key="key">
-      {{plotData.xLabel}}
-      {{plotData.yLabel}}-->
-        
+  <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
+  <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
+  <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
     <div class="proteoResults" style="display:flex; flex-direction: row; justify-content: space-between; ">
       <div id="proteomenu">
         <br>
-        <label for="plotData">Colonne x </label>
-          <select name = "plot" id="plotData">
-            <option value="xlist">accession</option>
-          </select>
-        <!-- choix 1: x 
-        choix 2: y
-        choix 3: prots
-        choix 4: genes -->
+          <AddPlot :data="availableData" @new-plot="drawNewPlot"/>
+            <div v-for="(plotData, key) in plotsData" :key="key">
+              <p>X axis: {{plotData.xLabel}}</p>
+              <p>Y axis: {{plotData.yLabel}}</p>
+            </div> 
       </div>
       <div id="proteovolcano">
         <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
       </div>
     </div>
   </div>
+
   <div id="transcripto">
     <p class="text-5xl font-medium m-2">Transcriptomics data</p>
     <!--Ici, modifier tous les uniprot par les transcrits-->
@@ -116,11 +109,11 @@ export default defineComponent({
     const nanProt: Ref<String[]> = ref([])
 
     const currentProteome : Ref<string> = ref('')
-    
+    console.log("availabledata",availableData)
     const draw = () => {
       if(canDraw.value) {
         volcanoDisabled.value = false; 
-        ////console.log(canDraw.value);
+        console.log(canDraw.value);
         const x_list = store.getters.getColDataByName(selected.value[0].name, 'number')
         const y_list = store.getters.getColDataByName(selected.value[1].name, 'number')
         const points = x_list.map((e: number, i: number) => ({
@@ -130,7 +123,6 @@ export default defineComponent({
           }))
 
         nanProt.value = points.filter((point: t.Points) => isNaN(point.x)).map((point : t.Points) => point.d.id); 
-
         plotData.xLabel = selected.value[0].name;
         plotData.yLabel = selected.value[1].name;
         plotData.points = points.filter((point: t.Points) => !isNaN(point.x));; 
@@ -223,21 +215,21 @@ export default defineComponent({
 <style scoped>
 
 #transcripto{
-  width:50%;
+  width:40%;
   text-align: center;
 }
 
 #proteo{
-  width: 50%;
+  width: 60%;
   text-align: center;
 }
 
 #proteovolcano{
-  width: 50%;
+  width: 80%;
 }
 
 #proteomenu {
-  width: 50%;
+  width: 30%;
   text-align: left;
   font-size: 20px;
 

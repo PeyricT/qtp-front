@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- <Listbox v-model="selectedProt" :options="formattedToDisplay" :multiple="true" @change="clickProt" listStyle="height:500px" :filter="true" :filterFields="filterFields">
+    <Listbox v-model="selectedProt" :options="formattedToDisplay" :multiple="true" @change="clickProt" listStyle="height:500px" :filter="true" :filterFields="filterFields">
       <template #header>
         <div class="font-bold p-2">
             Filtered proteins list ({{ points.length }})
@@ -12,13 +12,13 @@
       </div>
     </template>
     
-    </Listbox> -->
-    <!--<Button class="p-button-outlined w-full mt-3" @click="downloadProteins">
+    </Listbox> 
+    <Button class="p-button-outlined w-full mt-3" @click="downloadProteins">
       <div class="flex-auto space-x-1">
         <i class="pi pi-download" />
         <span> Download proteins list </span>
       </div>
-    </Button>-->
+    </Button> 
   </div>
 </template>
 
