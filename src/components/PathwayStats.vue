@@ -1,6 +1,6 @@
 <template>
 <div class="datatable">
-    <Button label="Compute pathways significance" :disabled="computationLaunched && !refresh" @click="launchComputation"/>
+    <!-- <Button label="Compute pathways significance" :disabled="computationLaunched && !refresh" @click="launchComputation"/>
     <div v-if="computationLaunched && !refresh" class="bg-gray-100">
         <Loader v-if="!resultsLoaded" message="ORA under computation..."/>
         <div v-if="resultsLoaded">
@@ -18,7 +18,7 @@
                 </DataTable>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 </template>
 

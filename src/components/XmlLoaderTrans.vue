@@ -8,6 +8,7 @@
         <DragAndDrop class="p-3 w-9/10"
         @xml-load="loadDroppedFile"
         @xls-drop="xlsDropped=true"
+        @file-name="loadFileName"
         />
         <!--<InputFile/>-->
         <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/>
@@ -20,8 +21,8 @@
         <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select your reference proteome">
         </Dropdown>
 
-        <span v-if="selectedProteome.name">
-        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span>
+        <p><span v-if="selectedProteome.name">
+        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span></p>
 
     </div>
 
@@ -33,11 +34,8 @@
         
         <div class="border border-primary p-3">
             <div
-                class="font-semibold mb-2"
-                v-for="sTitle in headers"
-                :key="sTitle"
-            >
-                {{sTitle}}
+                class="font-semibold mb-2">
+                {{FN}}
             </div>
             <p> {{jsonData.length}} proteins</p>
             <p>
@@ -118,7 +116,7 @@ export default defineComponent({
             {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
         ); 
 
- 
+        let FN = ref(); 
 
         //const active = computed(() => store.state.count);
         const headers = computed( () => {
@@ -148,6 +146,10 @@ export default defineComponent({
 
         };
 
+        const loadFileName = (file_name: any) => {
+            //console.log("fn",file_name)
+            FN.value=file_name
+        }
 
         const loadExample = async () => {
             store.commit('states/mutateXlsDisplayed', false)
@@ -238,7 +240,7 @@ export default defineComponent({
             console.log(UniprotDatabase.proteome); 
         }
 
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton};
+        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton, loadFileName, FN};
     }
 });
 </script>

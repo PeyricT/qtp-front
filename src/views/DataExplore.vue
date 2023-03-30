@@ -1,38 +1,56 @@
 <template>
-<div>
-  <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
-  <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
-  <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
-      <!--<Listbox v-model="selected" :options="availableData" :multiple="true" :filter="true" filterPlaceholder="Search" listStyle="max-height:250px" optionLabel="name">
-      <template #header>
-        <p class="pl-3 pt-3 text-xl font-semibold"> Choose data records to display (x and y axes) </p>
-      </template>
-      </Listbox>
-      <Button class="w-full mt-2" label="Plot" :disabled="!canDraw" @click="draw"/>-->
-    <AddPlot :data="availableData" @new-plot="drawNewPlot"/>
-    <div v-for="(plotData, key) in plotsData" :key="key">
+<div class="plots" style="display:flex; flex-direction: row; justify-content: space-between; ">
+
+  <div id="proteo">
+    <p class="text-5xl font-medium m-2">Proteomics data</p>
+  <!--<Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>-->
+  <!--<<Error v-if="uniprotError" message="Can't retrieve uniprot data"/>-->
+  <!--<<Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>-->
+    <!--<<AddPlot :data="availableData" @new-plot="drawNewPlot"/>
+      <div v-for="(plotData, key) in plotsData" :key="key">
       {{plotData.xLabel}}
-      {{plotData.yLabel}}
-      <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
-    </div> 
-    <!--<div>
-        <OpenableWarnMessage class="mt-2" v-if="volcanoDrawed && nanProt.length >= 1" :header="nanProt.length + ' proteins with no data'" :contentTab="nanProt" content="These proteins don't have data : "/>
-        <div class="flex">
-          <Volcano 
-              :data="plotData" 
-              :taxid="taxid"
-              @volcano-drawed="volcanoDrawed=true"
-              @prot-selection-change="saveSelectedProtId"/>
-        </div>
+      {{plotData.yLabel}}-->
+        
+    <div class="proteoResults" style="display:flex; flex-direction: row; justify-content: space-between; ">
+      <div id="proteomenu">
+        <br>
+        <label for="plotData">Colonne x </label>
+          <select name = "plot" id="plotData">
+            <option value="xlist">accession</option>
+          </select>
+        <!-- choix 1: x 
+        choix 2: y
+        choix 3: prots
+        choix 4: genes -->
+      </div>
+      <div id="proteovolcano">
+        <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
+      </div>
     </div>
-  <ComputeORA v-if="volcanoDrawed && taxid"
-          @disable-volcano="volcanoDisabled=true"
-          @enable-volcano="volcanoDisabled=false"
-          :taxid="taxid"
-          :selectedProts="selectedProts"
-          />-->
+  </div>
+  <div id="transcripto">
+    <p class="text-5xl font-medium m-2">Transcriptomics data</p>
+    <!--Ici, modifier tous les uniprot par les transcrits-->
+  <!-- <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/> 
+  <Error v-if="uniprotError" message="Can't retrieve ensembl data"/>
+  <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
+    <AddPlot :data="availableData" @new-plot="drawNewPlot"/> -->
+    <!-- <div v-for="(plotData, key) in plotsData" :key="key"> -->
+      <!-- {{plotData.xLabel}}
+      {{plotData.yLabel}} -->
+    <div class="transcriptoResults" style="display:flex; flex-direction: row; justify-content: space-between; ">
+      <div id="transcriptovolcano">
+        <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
+      </div>
+      <div id="transcriptomenue">
+        essai transcripto
+      </div>
+    </div> 
+  </div>
 </div>
 </template>
+
+
 
 <script lang="ts">
 import { defineComponent, computed, ref, Ref, reactive, onMounted, ComputedRef } from 'vue';
@@ -105,7 +123,6 @@ export default defineComponent({
         ////console.log(canDraw.value);
         const x_list = store.getters.getColDataByName(selected.value[0].name, 'number')
         const y_list = store.getters.getColDataByName(selected.value[1].name, 'number')
-        
         const points = x_list.map((e: number, i: number) => ({
                 x:e, 
                 y: y_list[i], // aka 'none'
@@ -117,8 +134,6 @@ export default defineComponent({
         plotData.xLabel = selected.value[0].name;
         plotData.yLabel = selected.value[1].name;
         plotData.points = points.filter((point: t.Points) => !isNaN(point.x));; 
-
-
       }
     }
 
@@ -206,6 +221,27 @@ export default defineComponent({
 </script>
 
 <style scoped>
+
+#transcripto{
+  width:50%;
+  text-align: center;
+}
+
+#proteo{
+  width: 50%;
+  text-align: center;
+}
+
+#proteovolcano{
+  width: 50%;
+}
+
+#proteomenu {
+  width: 50%;
+  text-align: left;
+  font-size: 20px;
+
+}
 .active {
   background-color : orange;
 }

@@ -31,9 +31,9 @@ export default defineComponent({
                 return;
             }           
             const file = d.files[0] as File;
+                emit('file-name', file.name);
             const onLoad = (e: ProgressEvent<FileReader>) => {
                 dropData.value = e?.target?.result as ArrayBuffer;
-                //console.log("Fire XLS");
                 console.log("emit xmlLoad")
                 emit('xml-load', dropData.value);
                 /*const d = e?.target?.result;

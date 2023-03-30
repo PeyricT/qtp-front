@@ -1,7 +1,7 @@
 <template>
 <div class="relative">
     <div v-if="disabled" class="disabled"/>
-    <Listbox v-model="goSelection" :options="formattedToDisplay" :multiple="true" @change="clickSelection" listStyle="height:500px" :filter="true" :filterFields="filterFields">
+    <!-- <Listbox v-model="goSelection" :options="formattedToDisplay" :multiple="true" @change="clickSelection" listStyle="height:500px" :filter="true" :filterFields="filterFields">
         <template #header>
             <div class="font-bold p-2">
                 Selected GO ({{ go.length }})
@@ -12,7 +12,7 @@
             <span>{{slotProps.option.id}} : {{slotProps.option.name}}</span>
         </div>
         </template>
-    </Listbox>
+    </Listbox> -->
 </div>
 </template>
 
