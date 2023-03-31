@@ -1,166 +1,126 @@
 import { map } from 'd3';
 import { createStore } from 'vuex'
 import * as XLSX from 'xlsx';
-import {proteinSelection} from './modules/proteinSelection'
-import {states} from './modules/states' 
 
-export interface WorkBookStore {
-  count: number;
-  workBook: null | XLSX.WorkBook;
-  activeSheet: null|string;
-  dimensions: [number,number];
-  array: Array<Array<any>>;
-  selectedCol: number[];
-}
-
-export interface SelectionOptions {
-  colNum: number; 
-  remove: boolean; 
-}
-
-const parseRange = (refs: string)=>{
-  const [rowRange, colRange] = refs.split(':');
-
+export interface Ome{
+  name: string; 
+  number: number; 
 }
 
 export default createStore({
   state: {
-    count: 0,
-    workBook: null,
-    activeSheet:null,
-    dimensions:[0, 0],
-    array: [[]],
-    selectedCol : []
-  } as WorkBookStore,
-  getters : {
-    test(state): string {
-      return `HEAD:: ${state.count}<<`;
-    },
-    sheetNames(state): string[] {
-      if (state?.workBook?.SheetNames != null)
-        return state.workBook.SheetNames;
-      return [];
-    },
-    json(state, getters): Record<string, any>|null {
-      const _ = getters.getActiveSheet
-      return _ ?
-              XLSX.utils.sheet_to_json(_)
-              : null;
-    },
-    asArray(state, getters): Array<Array<any>>|null {
-      const _ = getters.getActiveSheet;      
-      console.log("activeSheet", _)
-      const test = XLSX.utils.sheet_to_json(_, {header:1})
-      console.log("OOOOO"); 
-      return _ ?
-              XLSX.utils.sheet_to_json(_, {header:1})
-              : null;
-    },
-    getActiveSheet(state): XLSX.WorkSheet|null {
-      if(state?.activeSheet) {
-        const _ = state?.workBook?.Sheets[state?.activeSheet];
-        return _ ? _ : null;
-      }
-      return null;
-    },
-    dimensions(state): [number,number]{
-      return state.dimensions;
-    },
-    cell(state, getters) {
-      const [nr, nc] = getters.dimensions;
-      
-      return (r: number, c: number)=>{
-        if(r > nr || c > nc){
-          console.error(`Accessing cell {${r}, ${c}}  out of range [${nr}, ${nc}]`);
-          return null;
-        }
-        return state.array[r][c];
-      }
-    },
-    currentSheetHeaders(state, getters): string[]{
-      const [nRow, nCol] = getters.dimensions;
-      const _: Array<string> = [];
-      for (let c =0 ; c < nCol ; c++){
-        _.push(getters.cell(0, c));
-      }
-      return _;
-    },
+  prot_cols: new Map<string, [any]>(),
+  gene_cols: new Map<string, [any]>(),
 
-    getSelectedHeaders(state, getters):  string[]{
-      const _: string[] = []
-      const nCol = getters.dimensions[1]; 
-      for (let c=0; c < nCol ; c++) {
-        if (state.selectedCol.includes(c)) _.push(getters.cell(0,c))
-      }
-      return _
-    },
+  prot_ids: new Map<string, number>(),
+  gene_ids: new Map<string, number>(),
 
-    getColDataByName(state, getters): (colName: string, type: string) => number|any[]|undefined { // We should index column by first element eg : { "colName":[ COL_DATA ]}
-      const [nRow, nCol] = getters.dimensions;
-      return (colName: string, type="number") => {
-        for (let j = 0; j < nCol ; j++) {
-          if(getters.cell(0, j) === colName) {
-            const w = [...Array(nRow - 1).keys()].map( (i)=> {
-              return type === 'number' ?
-                     Number.parseFloat(getters.cell(i+1, j)) :
-                     getters.cell(i+1, j);
-            });
-           // //console.log(`Vector ${colName}`);
-           // //console.log(w);
-            return w;
-          }
-        }
-        return undefined;
-      };
+  prot_xlsx: false,
+  gene_xlsx: false,
+
+  proteomes: new Array<Ome>(),
+  genomes: new Array<Ome>(),
   },
+  getters: {
+    getProtColsName: (state) => {
+      return Array.from(state.prot_cols.keys())
+    },
+    getGeneColsName: (state) => {
+      return Array.from(state.gene_cols.keys())
+    },
+
+    getProtCol: (state) => (col: string) => {
+      return state.prot_cols.get(col)
+    },
+    getGeneCol: (state) => (col: string) => {
+      return state.gene_cols.get(col)
+    },
+
+    getProt: (state) => (prot: string) => {
+      if (!state.prot_ids.has(prot)){
+        return undefined
+      }
+      let id: number = state.prot_ids.get(prot) as number;
+      let protData = new Map<string, any>();
+      state.prot_cols.forEach((value, key)=>{
+        protData.set(key, value[id])
+      })
+
+      return protData
+    },
+    getGene: (state) => (gene: string) => {
+      if (!state.gene_ids.has(gene)){
+        return undefined
+      }
+      let id: number = state.gene_ids.get(gene) as number;
+      let geneData = new Map<string, any>();
+      state.gene_cols.forEach((value, key)=>{
+        geneData.set(key, value[id])
+      })
+
+      return geneData
+    },
+
+    getProteomes(state){
+      return state.proteomes
+    },
+    getGenomes(state){
+      return state.genomes
+    },
+
+    isProtXlsx(state){
+      return state.prot_xlsx
+    },
+    isGeneXlsx(state){
+      return state.prot_xlsx
+    },
+
   },
   mutations: {
-    workBook(state, workBook: XLSX.WorkBook): void {
-      state.workBook = workBook;
-      state.activeSheet = state.workBook?.SheetNames[0] as string;
-      console.log("workbook mutation ok")
+    setProtCol(state, data){
+      state.prot_cols.set(data.colName, data.colData);
     },
-    dimensions(state, dim: [number, number]): void {      
-      state.dimensions = dim;     
+    setGeneCol(state, data){
+      state.gene_cols.set(data.colName, data.colData);
     },
-    array(state, arr: Array<Array<any>>): void {      
-      state.array = arr;     
+
+    setProtIds(state, data){
+      let ids = data.ids as Array<string>
+      ids.forEach((value, index) => {
+        state.prot_ids.set(value, index)
+      })
     },
-    pushUp (state): void {
-      // mutate state
-      state.count++
+    setGeneIds(state, data){
+      let ids = data.ids as Array<string>
+      ids.forEach((value, index) => {
+        state.gene_ids.set(value, index)
+      })
     },
-    addToSelection(state, addToSelectionOptions: SelectionOptions): void {
-      const index = state.selectedCol.indexOf(addToSelectionOptions.colNum)
-      if (index === -1) state.selectedCol.push(addToSelectionOptions.colNum)
-      else if(addToSelectionOptions.remove) state.selectedCol.splice(index, 1)
+
+    setProteome(state, data){
+      let proteomes_ = data.proteomes;
+      Object.keys(proteomes_).forEach((value, index) => {
+        state.proteomes.push({name: value, number: proteomes_[value] as number})
+      })
     },
-    mutateSelectedCols(state, colIds: number[]) {
-      state.selectedCol = colIds
+    setGenome(state, data){
+      let genomes_ = data.genomes;
+      Object.keys(genomes_).forEach((value, index) => {
+        let key = Object.keys(value)[0];
+        state.genomes.push({name: value, number: genomes_[value] as number})
+      })
+    },
+
+    setProtXlsx(state, data){
+      state.prot_xlsx = data.state;
+    },
+    setGeneXlsx(state, data){
+      state.gene_xlsx = data.state;
     }
-    
   },
   actions: {
-    initStoreBook(context, workBook): void {
-      console.log("initStoreBook")
-      context.commit('workBook', workBook);
-      const _ = context.getters.asArray;
-      console.log("oooo", _); 
-      context.commit('dimensions', _ ? [_.length, _[0].length] : [0,0] );
-      context.commit('array', _ ? _ : [[]]);
-    },
-    selectColByKeyword(context, keyword: string): void {
-      console.log("selectColByKeyword"); 
-      const nCol = context.state.dimensions[1]
-      for (let j = 0; j < nCol; j++){
-        if (context.getters.cell(0,j).includes(keyword)){
-          context.commit('addToSelection', {colNum : j, remove : false}); 
-        }
-      }
-    }
   },
   modules: {
-    proteinSelection, states
   }
 })
 
