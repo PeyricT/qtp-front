@@ -3,6 +3,7 @@
 
   <div id="proteo">
     <p class="text-5xl font-medium m-2">Proteomics data</p>
+    <br>
   <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/>
   <Error v-if="uniprotError" message="Can't retrieve uniprot data"/>
   <Warning v-if="!taxid && !uniprotError && uniprotLoaded" message="More than 1 taxid in your protein data. Impossible to compute ORA."/>
@@ -23,6 +24,7 @@
 
   <div id="transcripto">
     <p class="text-5xl font-medium m-2">Transcriptomics data</p>
+    <br>
     <!--Ici, modifier tous les uniprot par les transcrits-->
   <!-- <Loader v-if="!uniprotLoaded && !uniprotError" message="Uniprot data are loading..."/> 
   <Error v-if="uniprotError" message="Can't retrieve ensembl data"/>
@@ -36,7 +38,12 @@
         <Volcano :data="plotData" :taxid="taxid" :plotNumber="key"/>
       </div>
       <div id="transcriptomenue">
-        essai transcripto
+        <br>
+          <AddPlot :data="availableData" @new-plot="drawNewPlot"/>
+            <div v-for="(plotData, key) in plotsData" :key="key">
+              <p>X axis: {{plotData.xLabel}}</p>
+              <p>Y axis: {{plotData.yLabel}}</p>
+            </div> 
       </div>
     </div> 
   </div>
@@ -215,21 +222,29 @@ export default defineComponent({
 <style scoped>
 
 #transcripto{
-  width:40%;
+  width:50%;
   text-align: center;
 }
+#transcriptovolcano{
+  width: 75%;
+}
+
+#transcriptomenue{
+  width: 25%;
+}
+
 
 #proteo{
-  width: 60%;
+  width: 50%;
   text-align: center;
 }
 
 #proteovolcano{
-  width: 80%;
+  width: 75%;
 }
 
 #proteomenu {
-  width: 30%;
+  width: 25%;
   text-align: left;
   font-size: 20px;
 

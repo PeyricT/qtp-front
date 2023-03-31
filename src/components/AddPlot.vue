@@ -8,7 +8,6 @@
         :options="selectionLists.x" 
         :filter="true" 
         optionLabel="name"
-        optionDisabled="anything"
         @change="axisSelection('x')">
     </Dropdown>
     <p class="text-lg p-1 pb-2 font-medium"> Y axis </p>
@@ -17,7 +16,6 @@
         :options="selectionLists.y" 
         :filter="true"
         optionLabel="name"
-        optionDisabled="anything"
         @change="axisSelection('y')">
     </Dropdown>
     <br>
@@ -61,7 +59,7 @@ export default defineComponent ({
         }
     }, 
     setup(props, {emit}){
-        const displayDialog = ref(false); 
+        //const displayDialog = ref(false); 
         const selectedAxis = reactive({
             x : {'name': '', optionDisabled: false} ,
             y : {'name': '', optionDisabled: false}
@@ -69,7 +67,6 @@ export default defineComponent ({
         const selectedX: Ref<OptionType> = ref({'name': '', optionDisabled: false})
         const selectedY: Ref<OptionType> = ref({'name': '', optionDisabled: false})
         const data = toRefs(props).data
-        console.log(data)
         const selectionLists: ComputedRef<AxisSelectionListInterface> = computed(() => {
             const dataFormat: OptionType[] = data.value.map(val => ({name : val.name, optionDisabled: false}))
             return { 'x' : dataFormat, 'y' : copyArrayOfObjects(dataFormat) as OptionType[]}
@@ -98,17 +95,17 @@ export default defineComponent ({
         }
 
         const closeDialog = () =>{
-            displayDialog.value = false; 
+            //displayDialog.value = false; 
             reinitAxisSelection();   
         }
 
         const newPlot = () => {
             console.log("newPlot")
-            displayDialog.value = false; 
+            //displayDialog.value = false; 
             emit("new-plot", selectedAxis.x.name, selectedAxis.y.name); 
         }
 
-        return { displayDialog, selectedX, selectedY,  axisSelection, closeDialog, selectionLists, data, selectedAxis, newPlot }
+        return { selectedX, selectedY,  axisSelection, closeDialog, selectionLists, data, selectedAxis, newPlot }
 
     }
 

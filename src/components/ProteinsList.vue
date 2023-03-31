@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Listbox v-model="selectedProt" :options="formattedToDisplay" :multiple="true" @change="clickProt" listStyle="height:500px" :filter="true" :filterFields="filterFields">
+    <Listbox v-model="selectedProt" :options="formattedToDisplay" :multiple="true" @change="clickProt" listStyle="height:300px" :filter="true" :filterFields="filterFields">
       <template #header>
         <div class="font-bold p-2">
             Filtered proteins list ({{ points.length }})

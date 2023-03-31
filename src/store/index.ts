@@ -145,7 +145,7 @@ export default createStore({
       console.log("initStoreBook")
       context.commit('workBook', workBook);
       const _ = context.getters.asArray;
-      console.log("oooo", _); 
+      console.log("oooo", _);
       context.commit('dimensions', _ ? [_.length, _[0].length] : [0,0] );
       context.commit('array', _ ? _ : [[]]);
     },
