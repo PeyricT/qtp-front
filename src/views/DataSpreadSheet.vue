@@ -1,5 +1,5 @@
 <template>
-  <div class="bite" style="display:flex; flex-direction: row; justify-content: space-between; ">
+  <div class="main" style="display:flex; flex-direction:row; justify-content: space-between; height: 400px;">
       <div id="proteo">
         <p class="text-xl font-medium m-2"> Load your proteomics data </p>
         <XmlLoader />
@@ -8,6 +8,10 @@
         <p class="text-xl font-medium m-2"> Load your transcriptomics data </p>
         <XmlLoaderTrans />
       </div>
+  </div>
+  <div class="graf" style="display:flex; flex-direction: row; justify-content: space-between; ">
+    <!--si donnees transcripto et proteo sont load alors affichage de la couverture avec diagramme de venn-->
+    <p class="text-xl font-medium m-2">Coverage</p>
   </div>
 </template>
 
@@ -33,7 +37,6 @@ export default defineComponent({
 #proteo{
   /*text-align:center; */ 
   width:50%;
-  color: green;
 }
 #transcripto{
   /*text-align:center; */ 

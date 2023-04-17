@@ -26,12 +26,13 @@
                     </div>
                 </div>
             </div>
-
-            <!--filtered prot and go part -->
-            <div v-if="volcanoDrawed" class="flex w-full mt-2 flex-col">
+        </div>
+        <br>
+        <!--filtered prot and go part -->
+        <div id=protandgo v-if="volcanoDrawed" class="flex flex-col">
                 <div class="flex gap-4">
                 <!-- prot list -->
-                    <ProteinsList :points="filteredByPannelPoints" class="w-1/3" @click-on-prot="highlighFromProt"/>
+                    <ProteinsList id="ca" :points="filteredByPannelPoints" class="w-1/3" @click-on-prot="highlighFromProt"/>
                     <!-- go list -->
                     <div class="flex w-2/3 gap-2">
                         <div :class="goPartWidth.list">
@@ -47,14 +48,8 @@
                             :refresh="triggerStatsRefresh"
                             @click-on-go="highlightFromGo"/>
                     </div>
-
-
                 </div>                
             </div>
-
-            
-
-        </div>
         <Error v-if="error" message="Error with volcano plot>"/>
     </div>
 </template>
@@ -366,6 +361,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
+
+#protandgo{
+    width: 50%;
+    margin: auto;
+}
 .tab {
   overflow: hidden;
   border: 1px solid #ccc;
@@ -401,6 +401,7 @@ export default defineComponent({
     background-color:black;
     opacity:0.7;  
 }
+
 
 
 

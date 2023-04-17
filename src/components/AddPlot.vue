@@ -1,37 +1,26 @@
 <template>
-<div>
-    <Button label="Add new plot" @click="displayDialog=true"/>
-    <Dialog header="Add new plot" :visible="displayDialog" :closable="false">
-        <div class="flex gap-5">
-            <div>
-                <p class="text-lg p-1 pb-2 font-medium"> x axis </p>
-                <Dropdown 
-                    placeholder="x axis" 
-                    v-model="selectedAxis.x" 
-                    :options="selectionLists.x" 
-                    :filter="true" 
-                    optionLabel="name"
-                    optionDisabled="anything"
-                    @change="axisSelection('x')">
-                </Dropdown>
-            </div>
-            <div>
-                <p class="text-lg p-1 pb-2 font-medium"> y axis </p>
-                <Dropdown placeholder="y axis" 
-                    v-model="selectedAxis.y" 
-                    :options="selectionLists.y" 
-                    :filter="true"
-                    optionLabel="name"
-                    optionDisabled="anything"
-                    @change="axisSelection('y')">
-                </Dropdown>
-            </div>
-        </div>
-        <template #footer>
-                    <Button label="No" icon="pi pi-times" @click="closeDialog" class="p-button-text"/>
-                    <Button label="Yes" icon="pi pi-check" @click="newPlot" autofocus />
-        </template>
-    </Dialog>
+
+<div id="dropaxis">
+    <p class="text-lg p-1 pb-2 font-medium"> X axis </p>
+    <Dropdown
+        placeholder="Choose column 1" 
+        v-model="selectedAxis.x" 
+        :options="selectionLists.x" 
+        :filter="true" 
+        optionLabel="name"
+        @change="axisSelection('x')">
+    </Dropdown>
+    <p class="text-lg p-1 pb-2 font-medium"> Y axis </p>
+    <Dropdown placeholder="Choose column 2" 
+        v-model="selectedAxis.y" 
+        :options="selectionLists.y" 
+        :filter="true"
+        optionLabel="name"
+        @change="axisSelection('y')">
+    </Dropdown>
+    <br>
+    <Button label="Load" icon="pi pi-check" @click="newPlot" autofocus />
+        
 </div>
 </template>
 
@@ -70,7 +59,7 @@ export default defineComponent ({
         }
     }, 
     setup(props, {emit}){
-        const displayDialog = ref(false); 
+        //const displayDialog = ref(false); 
         const selectedAxis = reactive({
             x : {'name': '', optionDisabled: false} ,
             y : {'name': '', optionDisabled: false}
@@ -106,17 +95,17 @@ export default defineComponent ({
         }
 
         const closeDialog = () =>{
-            displayDialog.value = false; 
+            //displayDialog.value = false; 
             reinitAxisSelection();   
         }
 
         const newPlot = () => {
             console.log("newPlot")
-            displayDialog.value = false; 
+            //displayDialog.value = false; 
             emit("new-plot", selectedAxis.x.name, selectedAxis.y.name); 
         }
 
-        return { displayDialog, selectedX, selectedY,  axisSelection, closeDialog, selectionLists, data, selectedAxis, newPlot }
+        return { selectedX, selectedY,  axisSelection, closeDialog, selectionLists, data, selectedAxis, newPlot }
 
     }
 
