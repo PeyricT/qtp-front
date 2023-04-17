@@ -20,6 +20,9 @@ export default createStore({
 
   proteomes: new Array<Ome>(),
   genomes: new Array<Ome>(),
+
+  proteome :  "",
+  genome : "",
   },
   getters: {
     getProtColsName: (state) => {
@@ -68,11 +71,18 @@ export default createStore({
       return state.genomes
     },
 
+    getCurrentGenome(state){
+      return state.genome;
+    },
+    getCurrentProteome(state){
+      return state.proteome;
+    },
+
     isProtXlsx(state){
       return state.prot_xlsx
     },
     isGeneXlsx(state){
-      return state.prot_xlsx
+      return state.gene_xlsx
     },
 
   },
@@ -116,7 +126,14 @@ export default createStore({
     },
     setGeneXlsx(state, data){
       state.gene_xlsx = data.state;
-    }
+    },
+
+    setCurrentGenome(state, data){
+      state.genome = data.state;
+    },
+    setCurrentProteome(state, data){
+      state.proteome = data.state;
+    },
   },
   actions: {
   },

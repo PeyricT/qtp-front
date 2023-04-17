@@ -2,69 +2,27 @@
  See tricks : https://learnvue.co/2020/01/how-to-add-drag-and-drop-to-your-vuejs-project/
 */
 <template>
-
-   <div class="flex">
+    <div class="flex">
        
         <DragAndDrop class="p-3 w-9/10"
-        @xml-load="loadDroppedFile"
-        @xls-drop="xlsDropped=true"
+        @xml-load="storeData"
         />
-        <!--<InputFile/>-->
-        <Button class="p-button-link w-1/10" @click="loadExample" label="Load example"/>
-    </div>
 
-    <div v-if="loaded && uniprotDBFilled">
-
-        Select proteome
-        
-        <Dropdown v-model="selectedProteome" :options="proteomes" optionLabel="name" placeholder="Select your reference proteome">
-        </Dropdown>
-
-        <span v-if="selectedProteome.name">
-        {{selectedProteome.name}} contains {{selectedProteome.protein_number}} of your proteins </span>
+   </div>
+   <div v-if="isGeneXlsx">
+    Select proteome
+    <Dropdown v-model="selectedGenome" :options="getGenomes" optionLabel="name" placeholder="Select your reference proteome">
+    </Dropdown>
+    <span v-if="selectedGenome.name">
+    {{selectedGenome.name}} contains {{selectedGenome.number}} of your proteins </span>
 
     </div>
-
-    <Button v-if="selectedProteome.name" label="Metadata" @click="clickLoadButton"/>  
-    
-   <Loader class="p-mt-2" v-if="xlsDropped" message="Data are loading..."/>
-   <Loader class="p-mt-2" v-if="loaded && !uniprotDBFilled" message="Uniprot data are stored..."/>
-    <div v-if="loaded && uniprotDBFilled && !xlsDropped && canShowTable" class="mt-5">
-        
-        <div class="border border-primary p-3">
-            <div
-                class="font-semibold mb-2"
-                v-for="sTitle in headers"
-                :key="sTitle"
-            >
-                {{sTitle}}
-            </div>
-            <p> {{jsonData.length}} proteins</p>
-            <p>
-                {{selectedColumns.length}} selected columns
-            </p>
-            </div>
-
-    <!--Affichage du tableau d entree<DataTable :value="jsonData" :paginator="true" :rows="10" :resizableColumns="true" columnResizeMode="expand" showGridlines responsiveLayout="scroll" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10,20,50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-    v-model:filters="filters"
-    >
-        <template #header>
-            <div class="p-d-flex p-jc-between p-ai-center">
-                <MultiSelect :modelValue="selectedColumns" :options="columns" optionLabel="header" @update:modelValue="onSelection"
-                placeholder="Select Columns" :filter="true" class="w-1/2"/>
-                <span class="p-input-icon-left">
-                    <i class="pi pi-search" />
-                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
-                </span>
-            </div>
-        </template>
-        <Column v-for="(col, index) of selectedColumns" :field="col.field" :header="col.header" :key="col.field + '_' + index"></Column>
-    </DataTable> -->
-</div>
+   <Button class="p-button-link w-1/10" @click="store" label="Store cols"/>
+   <Button class="p-button-link w-1/10" @click="acc" label="Store Acc"/>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, onMounted, onUnmounted, reactive, watch, onBeforeUpdate, onUpdated, Ref } from 'vue';
+import { defineComponent, computed, ref, onMounted, onUnmounted, reactive, watch, onBeforeUpdate, onUpdated, Ref, shallowReactive } from 'vue';
 //import { ref } from 'vue'
 
 import DragAndDrop from '@/components/DragAndDrop.vue';
@@ -72,183 +30,109 @@ import Loader from '@/components/global/Loader.vue'
 import InputFile from '@/components/InputFile.vue'
 //import FileUpload from 'primevue/fileupload';
 import Button from 'primevue/button'; 
-import DataTable from 'primevue/datatable';
+//import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import MultiSelect from 'primevue/multiselect'; 
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import {FilterMatchMode} from 'primevue/api';
 import XLSX  from 'xlsx';
-import { useStore } from 'vuex'
+import { mapGetters, mapMutations, useStore } from 'vuex'
 
 import { logDB } from '../utilities/uniprot-storage';
 const UniprotDatabase = logDB(); 
 import { range } from '../utilities/basic_functions'
+import { Ome } from '../store/index'
+import { withStatement } from '@babel/types';
 
-interface ColTemplate{
-    field: string; 
-    header: string; 
-    idx: number; 
-}
-
-interface Proteome{
-    name: string; 
-    protein_number: number; 
-}
 
 export default defineComponent({
-    components : { DragAndDrop, Loader, InputFile, Button, DataTable, Column, MultiSelect, InputText, Dropdown },
-    setup(_, { emit }){
-        
-        const store = useStore()
-
-        const loaded = ref(false);
-        const xlsDropped = ref(false);
-        const uniprotDBFilled = ref(false);
-        const canShowTable = ref(false)
-
-        const columns: Ref<ColTemplate[]> = ref([]); //TO DO : typing
-        const jsonData = ref([]) // TO DO : typing
-        const selectedColumns: Ref<ColTemplate[]> = ref([]); 
-
-        const proteomes: Ref<Proteome[]> = ref([])
-        const selectedProteome : Ref<Proteome> = ref({'name': '', 'protein_number': 0})
-
-        const filters = ref(
-            {'global': { value: null, matchMode:FilterMatchMode.CONTAINS }}
-        ); 
-
- 
-
-        //const active = computed(() => store.state.count);
-        const headers = computed( () => {
-            ////console.log("HEADERS", store.getters.sheetNames); 
-            return  store.getters.sheetNames;
-        });
-
-        //permet de load le fichier
-        const loadDroppedFile = async (dropData: any) => {
-            store.commit('states/mutateXlsDisplayed', false)
-            xlsDropped.value = true;
-            uniprotDBFilled.value = false; 
-            loaded.value = false; 
- 
-            await storeData(dropData); 
-
-            const storedIds = await UniprotDatabase.getAll(); 
-
-            console.log("new request for proteome ?", storedIds)
-
-            const proteomesRes = await getProteome(storedIds); 
-
-            proteomes.value = Object.entries(proteomesRes).map(([proteomeName, proteinNumber]) => {
-                return {name : proteomeName, protein_number: proteinNumber}
-            })
-    
-
-        };
-
-
-        const loadExample = async () => {
-            store.commit('states/mutateXlsDisplayed', false)
-            xlsDropped.value = true;
-            uniprotDBFilled.value = false; 
-            loaded.value = false; 
-            const arrayData =  await fetch('xls/TMT-donées brutes_Results_20-0609-0618_VegetativeExp_V2_proteins_test.ods')
-                .then( (response) => {
-                    return response.arrayBuffer(); 
-                })
-                .catch(() => console.error("No XLS found"))
-
-            if (arrayData){
-                const data = new Uint8Array(arrayData);
-                await storeData(data); 
-                
-            }
-        }
-
-        const storeInUniprotDatabase = (): Promise<boolean> => {
-            console.log("storeInUniprotDatabase")
-            return new Promise((res, rej) => {
-                const uniprotIdList: string[]|undefined = store.getters.getColDataByName("Accession", "string");
-                if (uniprotIdList){
-                    UniprotDatabase.add(uniprotIdList)
-                        .then(() => res(true))
-                        .catch(err => rej(err))
-                }
-                else rej(Error("Can't fill up uniprot database. No uniprot ids"))
-            })
-        }
-
-        const onSelection = (val: ColTemplate[]) => {
-            console.log("add", val)
-            selectedColumns.value = columns.value.filter(col => val.includes(col))
-            store.commit('mutateSelectedCols', val.map(col => col.idx))
-        }
-
-        //permet de lire le fichier 
-        const storeData = async (data: any) => {
-            const wb = XLSX.read(data, {type:"array"});
-                store.dispatch('initStoreBook', wb);
-                //store.dispatch('selectColByKeyword', 'Abundance Ratio'); 
-                xlsDropped.value = false; 
-                loaded.value = true;
-
-                await storeInUniprotDatabase(); 
-                uniprotDBFilled.value = true; 
-                const headers = store.getters.currentSheetHeaders
-                const col: ColTemplate[] = headers.map((header:string, index:number) => {return {field: header.replace(/\./g, ''), header: header, idx: index}})
-                console.log("titre", store.getters.sTitle)
-                columns.value = col
-                const _ = store.getters.json
-                const _jsonData = [] as any
-                _.forEach((row: any) => {
-                    let newRow = {} as any
-                    Object.keys(row).forEach((key: string) => {
-                        const newKey = key.replace(/\./g, ''); 
-                        newRow[newKey] = row[key]
-                    })
-                    _jsonData.push(newRow)
-                })
-                jsonData.value = _jsonData; 
-                const selectedCols = col.filter((colElmt:any) => (colElmt.field.includes('Abundance Ratio') && ! colElmt.field.includes("Variability")) || colElmt.field === "Accession"); 
-                
-                selectedColumns.value = selectedCols
-                store.commit('mutateSelectedCols', selectedCols.map(col => col.idx))
-            
-                store.commit('states/mutateXlsDisplayed', true)
-        }
-
-        const getProteome = async(uniprotIDs: string[]) : Promise<{[proteome_name : string]: number}> => {
-            const response = await fetch(`/api/uniprot/proteome_scan`, {
-                method: 'POST',
-                headers: {
+    components : { DragAndDrop, Loader, InputFile, Button, Column, MultiSelect, InputText, Dropdown },
+    computed: {
+        ...mapGetters(['getGeneCol', 'getGene', 'getGeneColsName', 'getGenomes', 'isGeneXlsx']),
+    },
+    methods: {
+        ...mapMutations(['setGeneCol', 'setGeneIds', 'setGenome', 'setGeneXlsx']),
+        store(){
+          console.log(this.getGeneColsName)
+        },
+        acc(){
+            fetch('api/ensembl/listids', {
+            method: 'POST',
+            headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({'ensemblIDs' : ['TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2', 'TBX2']})
+            }).then(async (response) => {
+                let resp = response.text()
+                console.log(resp);
+            })
+        },
+        arrayColumn(arr: any, n:number): Array<any>{return arr.map((x:any) => x[n])},
+
+        storeData(data: any){
+            const wb = XLSX.read(data, {type:"array"});
+            var aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
+            console.log('sheet to json '+wb.SheetNames[0])
+            var col0 = aoa[0] as Array<any>
+            var ncol = col0.length
+            console.log(ncol)
+            for (let index = 0; index < ncol; index++) {
+              let arr = this.arrayColumn(aoa, index)
+              this.setGeneCol({colName: arr[0], colData: arr.slice(1)})
+              if(arr[0] === 'gene_name'){
+                this.setGeneIds({ids: arr.slice(1)})
+              }
+            }
+
+            const waiting = fetch('api/ensembl/listids', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({'uniprotIDs' : uniprotIDs})
-            });
-
-            return response.json()
+                body: JSON.stringify({'ensemblIDs' : this.getGeneCol('gene_name')})
+            }).then(resutls => {
+                const res = resutls.json().then(res => {
+                    console.log(res)
+                    this.setGeneCol({colName: 'gene_id', colData: res});
+                    return true;
+                })
+                return res;
+            })
+            
+            waiting.then(bool => {
+                console.log('gene_id')
+                console.log(this.getGeneCol('gene_id'))
+                fetch('api/ensembl/proteome_scan', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'ensemblIDs' : this.getGeneCol('gene_id')})
+                    }).then(async (response) => {
+                    const responseData = await response.json();
+                    console.log(responseData);
+                    this.setGenome({genomes: responseData});
+                    this.setGeneXlsx({state: true});
+                    console.log("loading data: Done")
+                })
+            })
+            
         }
-
-        const clickLoadButton = async() => {
-            canShowTable.value = true
-            UniprotDatabase.registerProteome(selectedProteome.value.name)
-            console.log(UniprotDatabase.proteome); 
-        }
-
-        return { loadDroppedFile, loadExample, xlsDropped, loaded, uniprotDBFilled, jsonData, selectedColumns, columns, onSelection, headers, filters, canShowTable, proteomes, selectedProteome, clickLoadButton};
-    }
+    },
+    setup(){
+      const selectedGenome : Ref<Ome> = ref({'name': '', 'number': 0});
+      
+      return { selectedGenome }
+    }   
 });
 </script>
 
 <style scoped>
 
-table, th, td{
-    border:1px solid black; 
-    background-clip: padding-box;
-}
 
 .col-clickable-div{
     height:100%; 

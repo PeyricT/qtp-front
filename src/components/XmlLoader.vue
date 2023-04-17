@@ -11,7 +11,7 @@
    </div>
    <div v-if="isProtXlsx">
     Select proteome
-    <Dropdown v-model="selectedProteome" :options="getProteomes" optionLabel="name" placeholder="Select your reference proteome">
+    <Dropdown v-model="selectedProteome" :options="getProteomes" optionLabel="name" placeholder="Select your reference proteome" @change="onChange($event)">
     </Dropdown>
     <span v-if="selectedProteome.name">
     {{selectedProteome.name}} contains {{selectedProteome.number}} of your proteins </span>
@@ -49,15 +49,19 @@ import { Ome } from '../store/index'
 export default defineComponent({
     components : { DragAndDrop, Loader, InputFile, Button, Column, MultiSelect, InputText, Dropdown },
     computed: {
-        ...mapGetters(['getGeneCol', 'getGene', 'getGeneColsName', 'getProtCol', 'getProt', 'getProtColsName', 'getProteomes', 'isProtXlsx']),
+        ...mapGetters(['getGeneCol', 'getGene', 'getGeneColsName', 'getProtCol', 'getProt', 'getProtColsName', 'getProteomes', 'isProtXlsx', 'getCurrentProteome']),
     },
     methods: {
-        ...mapMutations(['setGeneCol', 'setGeneIds', 'setProtCol', 'setProtIds', 'setProteome', 'setProtXlsx']),
+        ...mapMutations(['setGeneCol', 'setGeneIds', 'setProtCol', 'setProtIds', 'setProteome', 'setProtXlsx', 'setCurrentGenome', 'setCurrentProteome']),
+        onChange(event: any){
+          console.log(this.selectedProteome.name)
+          this.setCurrentProteome({state: this.selectedProteome.name})
+        },
         store(){
           console.log(this.getProtColsName)
         },
         acc(){
-          console.log(this.getProteomes)
+          console.log(this.getCurrentProteome)
         },
         prots(){
           fetch('/api/uniprot/get/A0A087WV00', {
@@ -102,11 +106,14 @@ export default defineComponent({
               this.setProteome({proteomes: responseData});
               this.setProtXlsx({state: true});
         })
-        }
+        },
+
+        storeProteome(name: string){
+          this.setCurrentProteome(name);
+        },
     },
     setup(){
       const selectedProteome : Ref<Ome> = ref({'name': '', 'number': 0});
-      
       return { selectedProteome }
     }   
 });
